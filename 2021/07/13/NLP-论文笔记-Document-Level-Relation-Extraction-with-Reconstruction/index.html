@@ -266,7 +266,8 @@
 </li>
 <li><p><em>Graph  Encoder</em>: </p>
 <p>Dense  connected GAT。经由密集连接的GAT得到entity的representation：                                 </p>
-<p>$$<br>\mathbf{z}<em>{n}^{l}=\mathbf{W}</em>{e}^{l} \cdot\left[\mathbf{v}<em>{n}: \mathbf{s}</em>{n}^{1}: \mathbf{s}<em>{n}^{2}: \cdots: \mathbf{s}</em>{n}^{l-1}\right]<br>$$<br>其中，$[ \mathbf{s}<em>{n}^{1}: \mathbf{s}</em>{n}^{2}: \cdots: \mathbf{s}_{n}^{l-1}]$ 为所有先前hop reasoning 操作的输出；在每一步推理过程中(hop reasoning)，根据每一种类型的edge，capture当前节点与周围节点之间的特征信息(self-attention)：                                   </p>
+<p>$$\mathbf{z}<em>{n}^{l}=\mathbf{W}</em>{e}^{l} \cdot\left[\mathbf{v}<em>{n}: \mathbf{s}</em>{n}^{1}: \mathbf{s}<em>{n}^{2}: \cdots: \mathbf{s}</em>{n}^{l-1}\right]$$</p>
+<p>其中，$[ \mathbf{s}<em>{n}^{1}: \mathbf{s}</em>{n}^{2}: \cdots: \mathbf{s}_{n}^{l-1}]$ 为所有先前hop reasoning 操作的输出；在每一步推理过程中(hop reasoning)，根据每一种类型的edge，capture当前节点与周围节点之间的特征信息(self-attention)：                                   </p>
 <p>$$<br>\mathbf{s}<em>{n}^{l}=\operatorname{softmax}\left(\frac{\mathbf{z}</em>{n}^{l} \mathbf{K}^{\top}}{\sqrt{d_{0}}}\right) \mathbf{V}<br>$$</p>
 </li>
 <li><p><em>Classifier</em>:  </p>
