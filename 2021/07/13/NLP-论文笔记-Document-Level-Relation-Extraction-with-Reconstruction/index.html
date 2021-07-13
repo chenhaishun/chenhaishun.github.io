@@ -235,7 +235,7 @@
         </header>
 
         <div class="post-content">
-            <h3 id="Snapshot"><a href="#Snapshot" class="headerlink" title="Snapshot"></a>Snapshot</h3><ul>
+            <h2 id="Snapshot"><a href="#Snapshot" class="headerlink" title="Snapshot"></a>Snapshot</h2><ul>
 <li><p>论文来源：AAAI 2021</p>
 </li>
 <li><p>面向任务：DocRE</p>
@@ -259,7 +259,7 @@
 </li>
 </ul>
 <p><img src="https://raw.githubusercontent.com/chenhaishun/test_pic/master/typora202102/26/123327-379682.png" alt="7,8,9之间，仅有7,9实体间实际存在关系"></p>
-<h3 id="Method"><a href="#Method" class="headerlink" title="Method"></a>Method</h3><h5 id="Baseline-model："><a href="#Baseline-model：" class="headerlink" title="Baseline model："></a>Baseline model：</h5><ul>
+<h2 id="Method"><a href="#Method" class="headerlink" title="Method"></a>Method</h2><h3 id="Baseline-model："><a href="#Baseline-model：" class="headerlink" title="Baseline model："></a>Baseline model：</h3><ul>
 <li><p><em>Graph Construction</em>: </p>
 <p>与EoG类似建图方式类似，还是三种不同类型的节点，Mention node, Entity node, Sentence node；边的类型有 MM edge, MS edge, ME edge, SS edge, ES edge；</p>
 <p>另外，本文额外增添一种类型的边，Mention-Coreference edge以连接同一实体的不同mention。</p>
@@ -279,7 +279,7 @@ R(r)=P\left(r \mid\left\{e_{i}, e_{j}\right\}\right)=\operatorname{sigmoid}\left
 <script type="math/tex; mode=display">
 \operatorname{Loss}_{c}=-\frac{1}{\sum_{t=0}^{T} N_{t}} \sum_{t=1}^{T} \sum_{n=1}^{N_{t}}\left\{r_{n}^{t} \log \left(R\left(r_{n}^{t}\right)\right)\right.\left.+\left(1-r_{n}^{t}\right) \log \left(1-R\left(r_{n}^{t}\right)\right)\right\}</script></li>
 </ul>
-<h5 id="Our-model"><a href="#Our-model" class="headerlink" title="Our model"></a>Our model</h5><div align="center">
+<h3 id="Our-model"><a href="#Our-model" class="headerlink" title="Our model"></a>Our model</h3><div align="center">
         <img src="https://raw.githubusercontent.com/chenhaishun/test_pic/master/typora202102/26/172739-530697.png">  
     </a>
 </div>
@@ -300,7 +300,8 @@ R(r)=P\left(r \mid\left\{e_{i}, e_{j}\right\}\right)=\operatorname{sigmoid}\left
 </ul>
 <script type="math/tex; mode=display">
 p_{b_{c}}=\operatorname{LSTM}\left(p_{b_{c-1}}, q_{b_{c-1}}\right)</script><script type="math/tex; mode=display">
-P\left(v_{b_c} \mid v_{<b_c}\right)=\frac{\exp \left(p_{b_c} W_{r} q_{b_c}\right)}{\sum_{n} \exp \left(p_{b_c} W_{r} q_{b_c}\right)}</script><ul>
+P\left(v_{b_c} \mid v_{<b_c}\right)=\frac{\exp \left(p_{b_c} W_{r} q_{b_c}\right)}{\sum_{n} \exp \left(p_{b_c} W_{r} q_{b_c}\right)}</script><script type="math/tex; mode=display">
+\mathcal{N}\left(\phi_{n}\right)=\prod_{c=1}^{C}\left(\mathcal{P}\left(\mathbf{v}_{b_{c}} \mid \mathbf{v}_{<b_{c}}\right)\right)</script><ul>
 <li><p>问题三：增强此路径出现的概率会带给模型什么?</p>
 <p>针对每一实体对，都会有一条实例路径被视为路径重构的监督路径(supervision path):</p>
 <script type="math/tex; mode=display">
@@ -308,15 +309,18 @@ P\left(v_{b_c} \mid v_{<b_c}\right)=\frac{\exp \left(p_{b_c} W_{r} q_{b_c}\right
 <script type="math/tex; mode=display">
 \operatorname{Loss}_{r}=-\frac{1}{\sum_{t=0}^{T} N_{t}} \sum_{t=1}^{T} \sum_{n=1}^{N_{t}}\left\{r_{n}^{t} \log \left(\mathcal{N}\left(\phi_{n}\right))\right)\right.\left.+\left(1-r_{n}^{t}\right) \log \left(1-\mathcal{N}\left(\phi_{n}\right))\right)\right\}</script><p>不清楚为什么作者在这里使用 $\prod_{c=1}^{C}\left(1-P_{b_{c}}\right)$ 替换了 $1-\mathcal{N}\left(\phi_{n}\right)$….</p>
 <p>新的$Loss_r$长这样子：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/02/164919-951163.png" alt=""></p>
-<p>最终$Loss$(分类+重构):</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+\operatorname{Loss}_{r}=-\frac{1}{\sum_{t=0}^{T} N_{t}} & \sum_{t=1}^{T} \sum_{n=1}^{N_{t}}\left\{\sum _ { b _ { c } = 1 } ^ { b _ { C } } \left\{\left(r_{n}^{t} \log P_{b_{c}}\right)\right.\right.\\
+&\left.\left.+\left(1-r_{n}^{t}\right) \log \left(1-P_{b_{c}}\right)\right\}\right\} .
+\end{aligned}</script><p>最终$Loss$(分类+重构):</p>
 <script type="math/tex; mode=display">
 {Loss} ={Loss}_{c}+{Loss}_{r}</script></li>
 <li><p>推断时，加入reconstruction偏置项，计算关系对分数：</p>
 <script type="math/tex; mode=display">
 S(r)=\log (R(r))+\lambda \cdot \frac{1}{C} \sum_{b_{c}=1}^{b_{C}} \log \left(P_{b_{c}}\right)</script></li>
 </ul>
-<h3 id="Experiment"><a href="#Experiment" class="headerlink" title="Experiment"></a>Experiment</h3><div align="center">
+<h2 id="Experiment"><a href="#Experiment" class="headerlink" title="Experiment"></a>Experiment</h2><div align="center">
         <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202102/28/171908-572688.png">  
     </a>
 </div>
@@ -335,12 +339,12 @@ S(r)=\log (R(r))+\lambda \cdot \frac{1}{C} \sum_{b_{c}=1}^{b_{C}} \log \left(P_{
 </blockquote>
 </li>
 </ul>
-<h3 id="Reflection"><a href="#Reflection" class="headerlink" title="Reflection"></a>Reflection</h3><ol>
+<h2 id="Reflection"><a href="#Reflection" class="headerlink" title="Reflection"></a>Reflection</h2><ol>
 <li>这篇文章主要是在于人为固定了三种推理路径，真<strong>“人工”</strong>智能，规定了inference的方向，那么问题来了，之前的模型inference的机制出问题了吗？</li>
 <li>GAT那里只用了两层，那为啥还要dense连接呢？这个dense连接是为了什么呢？两层不至于信息丢失吧？</li>
 <li>reconstruction中的双线性以及LSTM隐藏状态与输出为什么都要用呢？节点出现概率计算公式的意义呢？</li>
 </ol>
-<h3 id="To-do"><a href="#To-do" class="headerlink" title="To do"></a>To do</h3><ul>
+<h2 id="To-do"><a href="#To-do" class="headerlink" title="To do"></a>To do</h2><ul>
 <li><p>基于图的四部曲？？能总结出东西吗？</p>
 <p>encoder - graph - inference - classification</p>
 </li>
