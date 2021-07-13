@@ -265,14 +265,13 @@
 <p>另外，本文额外增添一种类型的边，Mention-Coreference edge以连接同一实体的不同mention。</p>
 </li>
 <li><p><em>Graph  Encoder</em>: </p>
-<p>Dense  connected GAT。经由密集连接的GAT得到entity的representation：     </p>
-<p>​                            </p>
+<p>Dense  connected GAT。经由密集连接的GAT得到entity的representation：        </p>
 <script type="math/tex; mode=display">
-\mathbf{z}_{n}^{l}=\mathbf{W}_{e}^{l} \cdot\left[\mathbf{v}_{n}: \mathbf{s}_{n}^{1}: \mathbf{s}_{n}^{2}: \cdots: \mathbf{s}_{n}^{l-1}\right]</script><p>其中，$[ \mathbf{s}<em>{n}^{1}: \mathbf{s}</em>{n}^{2}: \cdots: \mathbf{s}_{n}^{l-1}]$ 为所有先前hop reasoning 操作的输出；在每一步推理过程中(hop reasoning)，根据每一种类型的edge，capture当前节点与周围节点之间的特征信息(self-attention)：                                   </p>
+\mathbf{z}_{n}^{l}=\mathbf{W}_{e}^{l} \cdot\left[\mathbf{v}_{n}: \mathbf{s}_{n}^{1}: \mathbf{s}_{n}^{2}: \cdots: \mathbf{s}_{n}^{l-1}\right]</script><p>其中，$[ \mathbf{s}_{n}^{1}: \mathbf{s}_{n}^{2}: \cdots: \mathbf{s}_{n}^{l-1}]$ 为所有先前hop reasoning 操作的输出；在每一步推理过程中(hop reasoning)，根据每一种类型的edge，capture当前节点与周围节点之间的特征信息(self-attention)：                                   </p>
 <script type="math/tex; mode=display">
 \mathbf{s}_{n}^{l}=\operatorname{softmax}\left(\frac{\mathbf{z}_{n}^{l} \mathbf{K}^{\top}}{\sqrt{d_{0}}}\right) \mathbf{V}</script></li>
 <li><p><em>Classifier</em>:  </p>
-<p>$L$ 次 hop reasoning 后 (相当于有$L$层密集连接层，好好想想~)，得到序列$[ \mathbf{s}<em>{n}^{1}: \mathbf{s}</em>{n}^{2}: \cdots: \mathbf{s}<em>{n}^{L}]$， 最后每一节点再经过一层非线性变换得到异构图表示：$\left{\mathbf{q}</em>{1}, \mathbf{q}<em>{2}, \cdots, \mathbf{q}</em>{N}\right}$                                 </p>
+<p>$L$ 次 hop reasoning 后 (相当于有$L$层密集连接层，好好想想~)，得到序列$[ \mathbf{s}_{n}^{1}: \mathbf{s}_{n}^{2}: \cdots: \mathbf{s}_{n}^{L}]$， 最后每一节点再经过一层非线性变换得到异构图表示：$\left\{\mathbf{q}_{1}, \mathbf{q}_{2}, \cdots, \mathbf{q}_{N}\right\}$                                 </p>
 <script type="math/tex; mode=display">
 \mathbf{q}_{n}=\operatorname{Relu}\left(\mathbf{W}_{o} \cdot\left[\mathbf{v}_{n}: \mathbf{s}_{n}^{1}: \cdots: \mathbf{s}_{n}^{L}\right]\right)</script><p>每一对实体对间计算存在某种关系(r)的可能性：</p>
 <script type="math/tex; mode=display">
@@ -307,7 +306,7 @@ P\left(v_{b_c} \mid v_{<b_c}\right)=\frac{\exp \left(p_{b_c} W_{r} q_{b_c}\right
 <script type="math/tex; mode=display">
 \phi_{n}=\left\{\mathbf{v}_{b_1}, \mathbf{v}_{b_2}, \cdots, \mathbf{v}_{b_C}\right\}</script><p><strong>Reconstruction loss:</strong>（最大化有关系的路径分数，最小化没有关系的路径分数）</p>
 <script type="math/tex; mode=display">
-\operatorname{Loss}_{r}=-\frac{1}{\sum_{t=0}^{T} N_{t}} \sum_{t=1}^{T} \sum_{n=1}^{N_{t}}\left\{r_{n}^{t} \log \left(\mathcal{N}\left(\phi_{n}\right))\right)\right.\left.+\left(1-r_{n}^{t}\right) \log \left(1-\mathcal{N}\left(\phi_{n}\right))\right)\right\}</script><p>不清楚为什么作者在这里使用 $\prod<em>{c=1}^{C}\left(1-P</em>{b<em>{c}}\right)$ 替换了 $$1-\mathcal{N}\left(\phi</em>{n}\right)$$….</p>
+\operatorname{Loss}_{r}=-\frac{1}{\sum_{t=0}^{T} N_{t}} \sum_{t=1}^{T} \sum_{n=1}^{N_{t}}\left\{r_{n}^{t} \log \left(\mathcal{N}\left(\phi_{n}\right))\right)\right.\left.+\left(1-r_{n}^{t}\right) \log \left(1-\mathcal{N}\left(\phi_{n}\right))\right)\right\}</script><p>不清楚为什么作者在这里使用 $\prod_{c=1}^{C}\left(1-P_{b_{c}}\right)$ 替换了 $1-\mathcal{N}\left(\phi_{n}\right)$….</p>
 <p>新的$Loss_r$长这样子：</p>
 <p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/02/164919-951163.png" alt=""></p>
 <p>最终$Loss$(分类+重构):</p>
