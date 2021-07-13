@@ -266,90 +266,9 @@
 </li>
 <li><p><em>Graph  Encoder</em>: </p>
 <p>Dense  connected GAT。经由密集连接的GAT得到entity的representation：                                 </p>
-<script type="math/tex; mode=display">\mathbf{z}_{n}^{l}=\mathbf{W}_{e}^{l} \cdot\left[\mathbf{v}_{n}: \mathbf{s}_{n}^{1}: \mathbf{s}_{n}^{2}: \cdots: \mathbf{s}_{n}^{l-1}\right]</script><p>其中，$[ \mathbf{s}<em>{n}^{1}: \mathbf{s}</em>{n}^{2}: \cdots: \mathbf{s}_{n}^{l-1}]$ 为所有先前hop reasoning 操作的输出；在每一步推理过程中(hop reasoning)，根据每一种类型的edge，capture当前节点与周围节点之间的特征信息(self-attention)：                                   </p>
-<script type="math/tex; mode=display">
-\mathbf{s}_{n}^{l}=\operatorname{softmax}\left(\frac{\mathbf{z}_{n}^{l} \mathbf{K}^{\top}}{\sqrt{d_{0}}}\right) \mathbf{V}</script></li>
-<li><p><em>Classifier</em>:  </p>
-<p>$L$ 次 hop reasoning 后 (相当于有$L$层密集连接层，好好想想~)，得到序列$[ \mathbf{s}<em>{n}^{1}: \mathbf{s}</em>{n}^{2}: \cdots: \mathbf{s}<em>{n}^{L}]$， 最后每一节点再经过一层非线性变换得到异构图表示：$\left{\mathbf{q}</em>{1}, \mathbf{q}<em>{2}, \cdots, \mathbf{q}</em>{N}\right}$                                 </p>
-<script type="math/tex; mode=display">
-\mathbf{q}_{n}=\operatorname{Relu}\left(\mathbf{W}_{o} \cdot\left[\mathbf{v}_{n}: \mathbf{s}_{n}^{1}: \cdots: \mathbf{s}_{n}^{L}\right]\right)</script><p>每一对实体对间计算存在某种关系(r)的可能性：</p>
-<script type="math/tex; mode=display">
-R(r)=P\left(r \mid\left\{e_{i}, e_{j}\right\}\right)=\operatorname{sigmoid}\left(\operatorname{MLP}\left(\left[\mathbf{q}_{i}: \mathbf{q}_{j}\right]\right)\right)</script><p>BCE（binary cross-entropy, 二分类,遍历所有的实体对以及关系类型）计算Loss:                          </p>
-<script type="math/tex; mode=display">
-\operatorname{Loss}_{c}=-\frac{1}{\sum_{t=0}^{T} N_{t}} \sum_{t=1}^{T} \sum_{n=1}^{N_{t}}\left\{r_{n}^{t} \log \left(R\left(r_{n}^{t}\right)\right)\right.\left.+\left(1-r_{n}^{t}\right) \log \left(1-R\left(r_{n}^{t}\right)\right)\right\}</script></li>
+<script type="math/tex; mode=display">\mathbf{z}_{n}^{l}=\mathbf{W}_{e}^{l} \cdot\left[\mathbf{v}_{n}: \mathbf{s}_{n}^{1}: \mathbf{s}_{n}^{2}: \cdots: \mathbf{s}_{n}^{l-1}\right]</script></li>
 </ul>
-<h5 id="Our-model"><a href="#Our-model" class="headerlink" title="Our model"></a>Our model</h5><div align="center">
-        <img src="https://raw.githubusercontent.com/chenhaishun/test_pic/master/typora202102/26/172739-530697.png">  
-    </a>
-</div>
 
-<ul>
-<li>问题一：我们需要增强哪条路径？</li>
-</ul>
-<p>人为定义三种类型的meta path: Pattern Recognition, Logical Reasoning, Coreference Reasoning;（可能就是为了符合DocRED数据集中所要求的那几种推理类型，我猜的）</p>
-<p>所有的实体对间至少存在一种上述的meta path，三种 meta path <u>优先级</u>：meta-path1 &gt; meta-path2 &gt; meta-path3。（如果一个entity pair里有多条符合meta path的路径，按照上述优先级保留一条即可）</p>
-<blockquote>
-<p>通常，相同的meta path可能会有多条实例路径，此时选用文档中首次出现的实例路径。</p>
-</blockquote>
-<ul>
-<li><p>问题二：怎么增强此类型路径？</p>
-<p>对于一条路径，把它看做是一系列节点的序列，最大化这条路径出现(序列生成？)的概率。</p>
-<p>利用LSTM建模，输入已选择路径中每个节点表示$q$(GAT输出表示)，输出LSTM隐藏状态$p$,softmax计算节点出现的条件概率，连乘之得此路径分数。($b_{C}$：number of nodes)</p>
-</li>
-</ul>
-<script type="math/tex; mode=display">
-p_{b_{c}}=\operatorname{LSTM}\left(p_{b_{c-1}}, q_{b_{c-1}}\right)</script><script type="math/tex; mode=display">
-P\left(v_{b_c} \mid v_{<b_c}\right)=\frac{\exp \left(p_{b_c} W_{r} q_{b_c}\right)}{\sum_{n} \exp \left(p_{b_c} W_{r} q_{b_c}\right)}</script><ul>
-<li><p>问题三：增强此路径出现的概率会带给模型什么?</p>
-<p>针对每一实体对，都会有一条实例路径被视为路径重构的监督路径(supervision path):</p>
-<script type="math/tex; mode=display">
-\phi_{n}=\left\{\mathbf{v}_{b_1}, \mathbf{v}_{b_2}, \cdots, \mathbf{v}_{b_C}\right\}</script><p><strong>Reconstruction loss:</strong>（最大化有关系的路径分数，最小化没有关系的路径分数）</p>
-<script type="math/tex; mode=display">
-\operatorname{Loss}_{r}=-\frac{1}{\sum_{t=0}^{T} N_{t}} \sum_{t=1}^{T} \sum_{n=1}^{N_{t}}\left\{r_{n}^{t} \log \left(\mathcal{N}\left(\phi_{n}\right))\right)\right.\left.+\left(1-r_{n}^{t}\right) \log \left(1-\mathcal{N}\left(\phi_{n}\right))\right)\right\}</script><p>不清楚为什么作者在这里使用 $\prod<em>{c=1}^{C}\left(1-P</em>{b<em>{c}}\right)$ 替换了 $$1-\mathcal{N}\left(\phi</em>{n}\right)$$….</p>
-<p>新的$Loss_r$长这样子：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/02/164919-951163.png" alt=""></p>
-<p>最终$Loss$(分类+重构):</p>
-<script type="math/tex; mode=display">
-{Loss} ={Loss}_{c}+{Loss}_{r}</script></li>
-<li><p>推断时，加入reconstruction偏置项，计算关系对分数：</p>
-<script type="math/tex; mode=display">
-S(r)=\log (R(r))+\lambda \cdot \frac{1}{C} \sum_{b_{c}=1}^{b_{C}} \log \left(P_{b_{c}}\right)</script></li>
-</ul>
-<h3 id="Experiment"><a href="#Experiment" class="headerlink" title="Experiment"></a>Experiment</h3><div align="center">
-        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202102/28/171908-572688.png">  
-    </a>
-</div>
-
-<p>作者也做了一些消融与对比实验，结论如下：</p>
-<ul>
-<li><p>随着迭代步数（Iteration=Training step）的进行，classification / reconstrucation performance性能均有提升，24K迭代两者达到平衡。</p>
-</li>
-<li><p>Reconstruction 在训练和推断时都有用。</p>
-</li>
-<li><p>所定义的三种 meta path 都有效帮助模型capture了实体对间的路径依赖#见原文4.8#</p>
-</li>
-<li><p>path attention scores没太看懂是什么意思？留下问题；</p>
-<blockquote>
-<p>其他同学的理解：加 reconstruction 之后，GAT 里面的 attn score 更不平均了，说明能更有针对的 attn 到某些词了</p>
-</blockquote>
-</li>
-</ul>
-<h3 id="Reflection"><a href="#Reflection" class="headerlink" title="Reflection"></a>Reflection</h3><ol>
-<li>这篇文章主要是在于人为固定了三种推理路径，真<strong>“人工”</strong>智能，规定了inference的方向，那么问题来了，之前的模型inference的机制出问题了吗？</li>
-<li>GAT那里只用了两层，那为啥还要dense连接呢？这个dense连接是为了什么呢？两层不至于信息丢失吧？</li>
-<li>reconstruction中的双线性以及LSTM隐藏状态与输出为什么都要用呢？节点出现概率计算公式的意义呢？</li>
-</ol>
-<h3 id="To-do"><a href="#To-do" class="headerlink" title="To do"></a>To do</h3><ul>
-<li><p>基于图的四部曲？？能总结出东西吗？</p>
-<p>encoder - graph - inference - classification</p>
-</li>
-<li><p>作者说到自己是从机器翻译得到的灵感？有几篇机器翻译的参考文献需要看下；</p>
-</li>
-</ul>
-<p>参考链接：<a target="_blank" rel="noopener" href="https://ivenwang.com/2021/01/23/docre-rec/">https://ivenwang.com/2021/01/23/docre-rec/</a></p>
-<p>问题二补充公式：</p>
-<script type="math/tex; mode=display">
-\mathcal{N}\left(\phi_{n}\right)=\prod_{c=1}^{C}\left(\mathcal{P}\left(\mathbf{v}_{b_{c}} \mid \mathbf{v}_{<b_{c}}\right)\right)</script>
         </div>
 
         
