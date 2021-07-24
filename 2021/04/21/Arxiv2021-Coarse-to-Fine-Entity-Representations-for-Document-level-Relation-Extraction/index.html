@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Chenhs">
+
+
+
+
+
+<title>Arxiv2021 Coarse-to-Fine Entity Representations for Document-level Relation Extraction | Chenhs</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        <!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+    });
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">思录</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/Hi">About</a>
+                
+                    <a class="menu-item" href="/Lists">Lists</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">思录</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/Hi">About</a>
+                
+                    <a class="menu-item" href="/Lists">Lists</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Arxiv2021 Coarse-to-Fine Entity Representations for Document-level Relation Extraction</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Chenhs</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">四月 21, 2021&nbsp;&nbsp;15:42:27</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/categories/NLP/">NLP</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="Snapshot"><a href="#Snapshot" class="headerlink" title="Snapshot"></a>Snapshot</h2><ul>
+<li><p>模型名称：Coarse-to-Fine Entity Representation (CFER)</p>
+</li>
+<li><p>论文来源：arXiv 2020.12.04 北大</p>
+</li>
+<li><p>面向任务：DocRED</p>
+</li>
+<li><p>论文动机：1. GNNs on document-level graph fail to model the interactions between long-distance entities.(由于过平滑问题?) 2.encode path可以一定程度解决长距离实体交互，但fail to capture global contextual information (since they usually integrate only local contextual information);</p>
+<blockquote>
+<p>CFER: global contextual information和model长距离实体交互 我全都要！</p>
+</blockquote>
+</li>
+<li><p>指标分数：</p>
+<ul>
+<li>Ign F1: 57.89 F1: 59.82 (BERT-base)</li>
+</ul>
+</li>
+<li><p>快看速评：</p>
+<ol>
+<li>multi-hop上的过平滑问题可以理解，那也是取决于构建的图上相关节点距离太远所以必须要多次hop，所以问题出在了构图上而不是图上的GNN上。第二点动机不是很能理解，为什么在编码节点的时候一定要用到global contextual information呢？encode path不就是为了摒弃掉无用信息吗？所以对这篇文章的动机持有怀疑态度！</li>
+<li>对了，这篇基于语法解析树构建的图；</li>
+</ol>
+</li>
+<li><p>代码复现：暂无</p>
+</li>
+<li><p>基于图的两种方法和存在问题（摘自原文）</p>
+<ul>
+<li>Integrate neighborhood information for each node, Although they consider the entire graph structure, they may fail to model the interactions between long-distance entities due to the inherent over-smoothing problem in GNN. </li>
+<li>Encode path information between the target entity pair in the grap, They have the ability to alleviate the problem of modeling long-distance entity interactions, but they may fail to capture more global contextual information since they usually integrate only local contextual informa- tion for nodes in the graph</li>
+</ul>
+</li>
+</ul>
+<h2 id="Method"><a href="#Method" class="headerlink" title="Method"></a>Method</h2><div align="center">
+        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202104/21/160001-194707.png">  
+    </a>
+</div>
+
+<h3 id="Graph-construction"><a href="#Graph-construction" class="headerlink" title="Graph construction"></a>Graph construction</h3><ul>
+<li><p>syntactic dependency edge: 对each sentence 基于spaCy做依赖解析；</p>
+</li>
+<li><p>adjacent word edge:相邻单词；</p>
+<blockquote>
+<p>Adding edges between adjacent words can mitigate the dependency parser errors.</p>
+</blockquote>
+</li>
+<li><p>self-loop edge: 自环，自身的历史信息；</p>
+</li>
+<li><p>adjacent sentence edge:依赖树的root根节点相连；</p>
+</li>
+<li><p>coreferential mention edge:共指连接边；</p>
+</li>
+</ul>
+<h3 id="Coarse-to-fine-Entity-representations"><a href="#Coarse-to-fine-Entity-representations" class="headerlink" title="Coarse-to-fine Entity representations"></a>Coarse-to-fine Entity representations</h3><div align="center">
+        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202104/21/161322-704499.png">  
+    </a>
+</div>
+
+<ul>
+<li><p>Text encoding module</p>
+<ul>
+<li><p>embedding layer(BERT/Glove)+contextual layer(Bi-GRU) </p>
+<p>得到contextual embedding $\mathbf{h}_{i}=\left[\overrightarrow{\mathbf{h}}_{i} ; \overleftarrow{\mathbf{h}_{i}}\right] \in \mathbb{R}^{d_{h}}$</p>
+</li>
+</ul>
+</li>
+<li><p>Coarse-level Representation Module</p>
+<p>DCGCN (密集连接图卷积神经网络) TODO#1</p>
+<blockquote>
+<p>DCGCN 可以capture local and global context information 来源于DCGCN</p>
+</blockquote>
+<script type="math/tex; mode=display">
+\begin{array}{l}
+\mathbf{h}_{i}^{(k, l)}=\operatorname{ReLU}\left(\sum_{j \in \mathcal{N}(i)} \mathbf{W}^{(k, l)} \hat{\mathbf{h}}_{j}^{(k, l)}+\mathbf{b}^{(k, l)}\right) \\
+\hat{\mathbf{h}}_{j}^{(k, l)}=\left[\mathbf{x}_{j}^{(k)} ; \mathbf{h}_{j}^{(k, 1)} ; \ldots ; \mathbf{h}_{j}^{(k, l-1)}\right]
+\end{array}</script><p>$\mathcal{N}(i)$是节点$i$的邻居集合(那么就是说聚合的时候不区分边类型，被视为同质图)， $\mathbf{x}_{j}^{(k)}$ 是第$k$个block的input, $\mathbf{x}_{j}^{(k)}$会在每个block中的layer输入与所有先前layer的输出concatenate作为下一次的输入(<strong>skip connection=?</strong>)</p>
+<p>第$k$个模块的输出为：</p>
+<script type="math/tex; mode=display">
+\mathbf{o}_{i}^{(k)}=\mathrm{FC}\left(\mathbf{x}_{i}^{(k)}+\left[\mathbf{h}_{i}^{(k, 1)} ; \ldots ; \mathbf{h}_{i}^{\left(k, m_{k}\right)}\right]\right)</script></li>
+<li><p>Fine-level Representation Module</p>
+<p>Coarse-level representations <strong>无法对长距离实体之间的交互建模；</strong></p>
+<p>在fine-level representation中，以coarse-level representations作为guidance,利用path information缓解这类问题；</p>
+<div align="center">
+        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202104/21/171752-578704.png">  
+    </a>
+</div>
+
+<p>针对$(e_1,e_2)$实体对的所有mention pair，构建$\left|e_{1}\right| \times\left|e_{2}\right|$个最短路径(only syntactic<br>dependency and adjacent sentence edges), 对于第$i$个路径$\left[w_{1}, \ldots, w_{l e n_{i}}\right]$</p>
+<p>Path encoder(the j-th node in the i-th path):</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+\overrightarrow{\mathbf{p}_{i, j}} &=\overrightarrow{\mathbf{G R U}}\left(\overrightarrow{\mathbf{p}_{i, j-1}}, \mathbf{o}_{w_{j}}^{(n)}\right) \\
+\overleftarrow{\mathbf{p}_{i, j}} &=\overleftarrow{\mathbf{G R U}}\left(\overleftarrow{\mathbf{p}_{i, j+1}}, \mathbf{o}_{w_{j}}^{(n)}\right) \\
+\mathbf{m}_{i}^{(h)} &=\overleftarrow{\mathbf{p}_{i, 1}}, \quad \mathbf{m}_{i}^{(t)}=\overrightarrow{\mathbf{p}_{i, l e n}}
+\end{aligned}</script><p>$\mathbf{m}_{i}^{(h)},\mathbf{m}_{i}^{(h)}$为头实体与尾实体的path-aware representations；当然，不是所有的path都有用，$\left|e_{1}\right| \times\left|e_{2}\right|$个最短路径中有多少有用信息呢？以coarse-level representations作为guidance去选择；（$\widetilde{\mathbf{h}},\widetilde{\mathbf{t}}$ 为 the coarse-level head and tail entity representations）</p>
+<blockquote>
+<p>这样attention score计算有什么道理吗？# TODO 3</p>
+</blockquote>
+<script type="math/tex; mode=display">
+\begin{aligned}
+\widetilde{\mathbf{h}} &=\frac{1}{\left|e_{1}\right|} \sum_{j \in e_{1}} \mathbf{o}_{j}^{(n)}, \quad \widetilde{\mathbf{t}}=\frac{1}{\left|e_{2}\right|} \sum_{j \in e_{2}} \mathbf{o}_{j}^{(n)} \\
+\alpha_{i} &=\operatorname{Softmax}_{i}\left(\mathbf{W}_{a}\left[\tilde{\mathbf{h}} ; \widetilde{\mathbf{t}} ; \mathbf{m}_{i}^{(h)} ; \mathbf{m}_{i}^{(t)}\right]+\mathbf{b}_{a}\right) \\
+\mathbf{h} &=\sum_{i} \mathbf{m}_{i}^{(h)} \cdot \alpha_{i}, \quad \mathbf{t}=\sum_{i} \mathbf{m}_{i}^{(t)} \cdot \alpha_{i}
+\end{aligned}</script><p><strong>选择图中的最短路径，可能会包含我们所说的Inference path，之后再attention去选择，这样会显得更不那么人工一些？</strong></p>
+</li>
+<li><p>Classifcaition Module</p>
+<script type="math/tex; mode=display">
+P\left(r \mid e_{1}, e_{2}\right)=\operatorname{Sigmoid}\left([\tilde{\mathbf{h}} ; \mathbf{h}]^{\mathrm{T}} \mathbf{W}_{c}[\tilde{\mathbf{t}} ; \mathbf{t}]+\mathbf{b}_{c}\right)_{r}</script><p>一个二分类没有什么好说的；loss是binary cross entropy loss；</p>
+</li>
+</ul>
+<h2 id="Experiment"><a href="#Experiment" class="headerlink" title="Experiment"></a>Experiment</h2><ul>
+<li><p>实验结果</p>
+<div align="center">
+        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202104/21/173442-714652.png">  
+    </a>
+</div>
+
+<p>CFER静态图相比较于LSR动态图更稀疏，更简单；</p>
+</li>
+<li><p>对于长尾分布中那些类别样本较少的关系类更加鲁棒（只对比了BERT-2-step,Bi-LSTM,挑了两个最软的柿子捏）</p>
+<ul>
+<li>作者说因为 we can capture both global information and subtle clues that may include special features of long-tail relations 可以说为强行胡扯吗？</li>
+</ul>
+<div align="center">
+        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202104/21/201800-666215.png">  
+    </a>
+</div>
+</li>
+<li><p>消融实验</p>
+<ul>
+<li>the attention aggregator</li>
+<li>used shortest paths -&gt;random shortest path </li>
+<li>DGGCN 对于捕获区全局与local上下文信息来说还是挺强的 </li>
+</ul>
+</li>
+<li>Case study 挺有意思,没怎么看懂…</li>
+</ul>
+<h2 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h2><ol>
+<li>Densely Connected Graph Convolutional Networks for Graph-to-Sequence Learning.</li>
+<li>看一下后面开源的代码</li>
+<li>attention计算方式比较疑惑，第一次见</li>
+</ol>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Chenhs</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://example.com/2021/04/21/Arxiv2021-Coarse-to-Fine-Entity-Representations-for-Document-level-Relation-Extraction/">http://example.com/2021/04/21/Arxiv2021-Coarse-to-Fine-Entity-Representations-for-Document-level-Relation-Extraction/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>😀😁😂🤣😃😄😅😆</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/document-level-RE/"># document-level RE</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2021/05/13/AAAI2021%20Document-Level-Relation-Extraction-with-Reconstruction/">AAAI2021|Document-Level Relation Extraction with Reconstruction</a>
+            
+            
+        </section>
+
+
+    </article>
+</div>
+
+
+
+
+
+
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Chenhs | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a>
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<span class="site-uv">
+    总访客量:
+    <i class="busuanzi-value" id="busuanzi_value_site_uv"></i>
+</span>&nbsp;
+
+
+<span class="site-pv">
+    总访问量:
+    <i class="busuanzi-value" id="busuanzi_value_site_pv"></i>
+</span>
+
+</span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
