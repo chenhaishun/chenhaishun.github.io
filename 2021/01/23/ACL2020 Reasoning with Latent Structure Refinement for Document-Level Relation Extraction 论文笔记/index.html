@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Chenhs">
+
+
+
+
+
+<title>ACL2020 | Reasoning with Latent Structure Refinement for Document-Level Relation Extraction | Chenhs</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        <!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+    });
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">思录</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/Hi">About</a>
+                
+                    <a class="menu-item" href="/Lists">Lists</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">思录</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/Hi">About</a>
+                
+                    <a class="menu-item" href="/Lists">Lists</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">ACL2020 | Reasoning with Latent Structure Refinement for Document-Level Relation Extraction</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Chenhs</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">一月 23, 2021&nbsp;&nbsp;17:09:22</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/categories/NLP/">NLP</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h3 id="Background"><a href="#Background" class="headerlink" title="Background"></a>Background</h3><ul>
+<li><p>论文动机</p>
+<ol>
+<li><p>现有的方法基于语法树(syntactic tress)、公指(co-references)或启发式方法(heuristics)来构建==静态文档级图== (本文是<strong>动态</strong>)，以建模非结构化文本的依赖关系。</p>
+</li>
+<li><p>对于文档关系抽取来说，模型需要丰富的非局部信息交互以此来推断两个实体之间的关系。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/20/100252-492079.png" alt="image-20200720100251201"></p>
+<ul>
+<li><p>问题定义</p>
+<p>The document-level relation extraction, where a system needs to ==comprehend multiple sentences to infer the relations== among entities by synthesizing relevant information from the entire document（文档层面的关系提取，模型需要理解多个句子，通过整合整个文档的相关信息来推断实体之间的关系）</p>
+</li>
+<li><p>解决办法</p>
+<ul>
+<li>多实例学习</li>
+<li>使用结构信息建模非局部依赖关系<ul>
+<li>dependency graph</li>
+<li>heterorgeneous graph(异质图)</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+</li>
+<li><p>论文贡献</p>
+<ol>
+<li>通过学习归纳一个动态潜在的文档级图(Inducing the latent document-level)来赋予跨句子的关系推理能力，本文将图结构视为一个潜在变量，并以端到端的方式对其进行归纳。(以往无法捕捉==rich non-local interactions==进行推理)</li>
+<li>模型建立在结构化注意力的基础上，基于变体的矩阵树定理，能够==生成任务特定的依赖结构==，以此来捕获实体之间的非局部交互。</li>
+<li>提出一种==refinement strategy==，使模型基于上一次迭代dynamically construct a latent structure 汇聚相关的信息，不断地通过迭代捕获复杂的交互信息，改进整个文档中的信息聚合，从而更好地进行多跳推理（multi-hop reasoning）</li>
+</ol>
+<p>LSR构建了一个同质网络，不区分边的类型，通过节点信息的传播来更新边的表示，通过动态更新自动的学习到哪些边更重要，从而增强对远程关系的推理能力。</p>
+</li>
+</ul>
+<hr>
+<h3 id="Model"><a href="#Model" class="headerlink" title="Model"></a>Model</h3><p>概述：Treats the ==graph structure as a latent variable==</p>
+<ol>
+<li>Our model based on the structured attention.</li>
+<li>使用 A variant  of Matrix-Tree Theorem生成 task-specific dependency structures去捕获非局部的实体信息交互。</li>
+<li>An iterative refinement strategy: the latent structures based on the last iterative,使模型逐渐capture the complex interactions. </li>
+</ol>
+<p><strong>Node Constructor</strong>： Encoding each sentence  of a document and outputs contextual representations，which  correspond to mentions and tokens on the SDP are extracted as nodes</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/20/105851-479375.png" alt=""></p>
+<ul>
+<li><p>文本编码-bi-LSTM：使用两个方向的隐藏层向量的拼接作为token的向量（非常正常的操作 😎）</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/20/113934-197518.png" alt="image-20200720113932889"></p>
+</li>
+<li><p>节点构造</p>
+<p>Mention nodes : correspond to different mentions of entities in each sentence.（）</p>
+<p>Entity nodes: The entity node ==is computed as the average of its mentions.==</p>
+<p>meta dependency path (MDP 元依赖路径) nodes</p>
+<p>| method 1     | <strong>Use all nodes in the dp-based tree of a sentence</strong>         |<br>| —————— | —————————————————————————————— |<br>| <strong>method 2</strong> | <strong>One sentence-level node by averaging all token representation</strong> |<br>| <strong>method 3</strong> | <strong>Use tokens on SDP between mentions in the sentence</strong>       |</p>
+<p>​                                                            To build a document-level graph</p>
+</li>
+</ul>
+<p><strong>Dynamic Reasoner</strong></p>
+<ul>
+<li><p>Structure Induction(归纳结构)：Used to ==learn a latent structure== of a document-level graph 结构归纳模块用于学习文档级图的潜在结构。</p>
+<p>基于structured attention和Matrix-Tree Theorem构建潜在依赖结构：</p>
+<ul>
+<li><p>计算pair-wise attention score，LSR对于不同的节点之间采用相同的方式来计算概率，作为边的表示；</p>
+<p>​                                               $\mathbf{s}_{i j}=\left(\tanh \left(\mathbf{W}_{p} \mathbf{u}_{i}\right)\right)^{T} \mathbf{W}_{b}\left(\tanh \left(\mathbf{W}_{c} \mathbf{u}_{j}\right)\right)$</p>
+<p>可以理解为利用<strong>attention的方式</strong>计算两个节点之间的关联度。$\mathbf{W}_{b}$是双线性变换的权值。</p>
+</li>
+<li><p>计算root score,表示节点$i$有多大的概率（probability）成为结构中的the root node.</p>
+<p>​                                                $\mathbf{s}_{i}^{r}=\mathbf{W}_{r} \mathbf{u}_{i}$</p>
+</li>
+<li><p>计算 ==The weight of the edge between the $i$-th and $j$-th，==第i个节点和第j个节点之间的边的权重。</p>
+<p>​                                                $\mathbf{P}_{i j}=\left\{\begin{array}{ll}0 &amp; \text { if } i=j \\ \exp \left(\mathbf{s}_{i j}\right) &amp; \text { otherwise }\end{array}\right.$</p>
+</li>
+<li><p>我们定义拉普拉斯矩阵$L$以及其变体$\hat{L}$</p>
+<p>​                                                $\mathbf{L}_{i j}=\left\{\begin{array}{ll}\sum_{i^{\prime}=1}^{n} \mathbf{P}_{i^{\prime} j} &amp; \text { if } i=j \\ -\mathbf{P}_{i j} &amp; \text { otherwise }\end{array}\right.$</p>
+<p>​                                                $\hat{\mathbf{L}}_{i j}=\left\{\begin{array}{ll}\exp \left(\mathbf{s}_{i}^{r}\right) &amp; \text { if } i=1 \\ \mathbf{L}_{i j} &amp; \text { if } i&gt;1\end{array}\right.$</p>
+</li>
+<li><p>最后计算邻接矩阵$A_{ij}$（文档级实体图的加权邻接矩阵）</p>
+<p>​                                                $\begin{aligned} \mathbf{A}_{i j}=&amp;\left(1-\delta_{1, j}\right) \mathbf{P}_{i j}\left[\hat{\mathbf{L}}^{-1}\right]_{i j} \\ &amp;-\left(1-\delta_{i, 1}\right) \mathbf{P}_{i j}\left[\hat{\mathbf{L}}^{-1}\right]_{j i} \end{aligned}$</p>
+<p>$\mathbf{A} \in \mathbb{R}^{n \times n}$是weighted adjacency matrix of the document level entity graph.</p>
+</li>
+</ul>
+</li>
+<li><p>Multi-hop Reasoning:  Used to perform inference on the induced latent structure. 多跳推理模块用于对潜在结构进行推理，根据图中节点的信息聚合更新每个节点的表示。</p>
+<p>Give $G$ with $n$ node, which represented with an $n*n$ adjacency matrix $A$.</p>
+<p>​                                                        $\mathbf{u}_{i}^{l}=\sigma\left(\sum_{j=1}^{n} \mathbf{A}_{i j} \mathbf{W}^{l} \mathbf{u}_{i}^{l-1}+\mathbf{b}^{l}\right)$</p>
+<p>使用==dense connections== to the GCNs in order to ==capture more structural information on large graph.==：</p>
+<p>为什么使用dense connections ?</p>
+<p>理解： 使用了多层图网络密集连接，以便在大型文档级图上捕获更多的结构信息。在密集连接的帮助下，能够训练一个更深层次的模型，捕捉更丰富的局部和非局部信息，以学习更好的图表示。这个密集连接的图网络和多头注意力机制的原理相似，而联想到图中边是根据两个节点经过注意力计算得到的，可以推测密集连接和多头注意力的效果相似，可以捕获图中不同的特征信息。</p>
+</li>
+<li><p>Iterative Refinement(迭代更新):  Refine the latent document-level graph for the better reasoning.</p>
+<p>Stacking $N$ blocks of the dynamic reasoner in order to induce the document-level structure $N$ times.</p>
+<p>更直观说，最初的浅层结构在最初迭代的时候大部分的信息来自相邻的邻居信息，随着迭代的进行—&gt;</p>
+<p>The induction module is able to generate a more informative structure.</p>
+<p>为了能够推断出超出简单父子关系的更丰富的结构信息，使用N个动态推理块来多次归纳文档级结构。通过与更丰富的非局部信息的交互，结构变得更加细化，归纳模块能够生成更合理的结构。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/20/165628-759145.png" alt="image-20200720165626252"></p>
+</li>
+</ul>
+<p><strong>Classifier</strong></p>
+<p>​                                                               $P\left(r \mid \mathbf{e}_{i}, \mathbf{e}_{j}\right)=\sigma\left(\mathbf{e}_{i}^{T} \mathbf{W}_{\mathbf{e}} \mathbf{e}_{j}+\mathbf{b}_{e}\right)_{r}$</p>
+<p>$\mathbf{W}_{e} \in \mathbb{R}^{d \times k \times d}$ and $\mathbf{b}_{e} \in \mathbb{R}^{k}$,其中 $k$ 是关系类别总数。</p>
+<hr>
+<h3 id="Experiment"><a href="#Experiment" class="headerlink" title="Experiment"></a>Experiment</h3><ul>
+<li><p><strong>实验数据集</strong></p>
+<p><strong>DocRED&amp;CDR(</strong>Chemical-Disease Reactions <strong>)&amp;GDA</strong>(Gene-Disease  Associations)（后两者是医学数据集）其中DocRED超过40％的关系事实需要对多个句子进行阅读和推理，所以DocRED与以前的句子级别数据集有显着差异。</p>
+</li>
+<li><p>对照实验</p>
+<p>| <strong>Sequence-based Models</strong> | <strong>ContextAware/BiLSTM/CNN</strong>       |<br>| ————————————- | ————————————————- |<br>| <strong>Graph-Based Models</strong>    | <strong>GCNN/EoG/AGGCN/GAT</strong>            |<br>| <strong>BERT-Based Models</strong>     | <strong>Fine-tune BERT/Two-Phase BERT</strong> |</p>
+</li>
+<li><p><strong>实验结果</strong></p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/20/184007-5597.png" alt="image-20200720184005729"></p>
+</li>
+</ul>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Chenhs</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://example.com/2021/01/23/ACL2020%20Reasoning%20with%20Latent%20Structure%20Refinement%20for%20Document-Level%20Relation%20Extraction%20%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/">http://example.com/2021/01/23/ACL2020%20Reasoning%20with%20Latent%20Structure%20Refinement%20for%20Document-Level%20Relation%20Extraction%20%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>😀😁😂🤣😃😄😅😆</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/document-level-RE/"># document-level RE</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2021/03/04/ACL2018-A-Walk-based-Model-on-Entity-Graphs-for-Relation-Extraction/">ACL2018 | A Walk-based Model on Entity Graphs for Relation Extraction</a>
+            
+            
+        </section>
+
+
+    </article>
+</div>
+
+
+
+
+
+
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Chenhs | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a>
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<span class="site-uv">
+    总访客量:
+    <i class="busuanzi-value" id="busuanzi_value_site_uv"></i>
+</span>&nbsp;
+
+
+<span class="site-pv">
+    总访问量:
+    <i class="busuanzi-value" id="busuanzi_value_site_pv"></i>
+</span>
+
+</span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
