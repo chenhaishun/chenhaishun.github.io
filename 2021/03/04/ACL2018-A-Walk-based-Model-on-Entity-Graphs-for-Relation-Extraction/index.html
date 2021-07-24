@@ -12,7 +12,7 @@
 
 
 
-<title>Chenhs</title>
+<title>A Walk-based Model on Entity Graphs for Relation Extraction | Chenhs</title>
 
 
 
@@ -214,7 +214,7 @@
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title"></h1>
+            <h1 class="post-title">A Walk-based Model on Entity Graphs for Relation Extraction</h1>
             
                 <div class="post-meta">
                     
@@ -223,104 +223,109 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">七月 24, 2021&nbsp;&nbsp;16:07:32</a>
+                        Date: <a href="#">三月 4, 2021&nbsp;&nbsp;16:06:46</a>
                         </span>
                     
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/categories/NLP/">NLP</a>
+                            
+                        </span>
                     
                 </div>
             
         </header>
 
         <div class="post-content">
-            <h3 id="Snapshot"><a href="#Snapshot" class="headerlink" title="Snapshot"></a>Snapshot</h3><ul>
-<li><p>模型名称：MIUK</p>
-</li>
-<li><p>论文来源：AAAI 2021 北大</p>
-</li>
-<li><p>面向任务：DocRED</p>
-</li>
-<li><p>论文动机：利用来自KGs的先验知识提升关系抽取的性能表现</p>
-</li>
-<li><p>指标分数：Ign F1:58.05，F1:59.99</p>
-</li>
-<li><p>快看速评：一篇融合local context与global kownledge的文章，通过检索KGs中与目标实体关联的concept作为补充信息，通过三种视角concept/entity/mention view聚合目标实体信息；对于KGs的选择，uncertain KGs （ConceptNet，ProBase）相对于 deterministic KGs 更容易捕获相关信息；同时作者还构建了一个实体、概念的文本描述知识库作为目标实体的补充语义信息 (ProBase_Desp)</p>
-<blockquote>
-<p>Given two words (typically two entities or an entity and a concept) and a relation, uncertain KGs provide <strong>a confidence score</strong> that measures <strong>the possibility of</strong> the two words have the given relation. </p>
-</blockquote>
-</li>
-<li><p>代码复现：<a target="_blank" rel="noopener" href="https://github.com/pkuserc/AAAI2021-MIUK-Relation-Extraction">https://github.com/pkuserc/AAAI2021-MIUK-Relation-Extraction</a></p>
-</li>
-</ul>
-<h3 id="Method"><a href="#Method" class="headerlink" title="Method"></a>Method</h3><h4 id="Input"><a href="#Input" class="headerlink" title="Input"></a>Input</h4><p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/24/151722-906134.png" alt="image-20210324151720692"></p>
+            <p>​             <strong>#Sentence Level, binary RE between given named entities(NE)#</strong></p>
+<h3 id="Background"><a href="#Background" class="headerlink" title="Background"></a>Background</h3><ul>
+<li><p>论文动机</p>
 <ul>
-<li>Input ducument : 借助entity anchors标记实体的所有提及 </li>
-<li>Uncertain KG(Probase)： 从ProBase中检索 top-K concepts以及其置信度得分</li>
-<li>Entity and Concept Descriptions： 与实体有关的the first two paragraphs作为补充信息</li>
+<li>作者发现一句话中针对实体提及可能会包含不止一个关系（多标签？）</li>
+<li>已有关系会对目标实体对之间的关系产生影响，即可由关系推导出关系；不同关系之间往往会存在一定的联系，即目标实体对的关系会收到同一句话其他关系的影响；</li>
 </ul>
-<h4 id="Cross-view-Inference-Framework"><a href="#Cross-view-Inference-Framework" class="headerlink" title="Cross-view Inference Framework"></a>Cross-view Inference Framework</h4><h5 id="Cross-view-Links"><a href="#Cross-view-Links" class="headerlink" title="Cross-view Links"></a>Cross-view Links</h5><p>(1) Mention2Entity Links: 目的是为了得到entity embedding</p>
-<p>再得到mention embedding之后，与以往直接平均mention embedding得到entity vector不同，这篇paper认为加个权重不错的😎，此权重从何而来？答曰：entity descriptions</p>
-<p>方法：以mention embedding作为key vector,entity description为query vector，计算权重。</p>
-<script type="math/tex; mode=display">
-\alpha_{i}=\frac{\exp \left(\mathbf{e}_{d} \mathbf{m}_{i}^{T}\right)}{\sum_{i=1}^{t} \exp \left(\mathbf{e}_{d} \mathbf{m}_{i}^{T}\right)}\\
-\mathbf{e}_{l}=\sum_{i=1}^{t} \alpha_{i} \cdot \mathbf{m}_{i}</script><p>得到local entity represnetation $e_l$, 进一步添加minimum distance ($d_{ht}=-d_{th}$)得到local interactive vector:</p>
-<script type="math/tex; mode=display">
-\mathbf{u}_{l}=f_{l}\left(\left[\mathbf{h}_{l} ; \mathbf{d}_{h t}\right],\left[\mathbf{t}_{l} ; \mathbf{d}_{t h}\right]\right)</script><p>(2) Entity2Concept Links：目的是为了得到与目标实体相关的concept vector</p>
-<p>对于目标实体$e$，从ProBase中检索与其相关 top-K concepts（$c_1,c_2,\dots,c_k$）以及其置信度得分[transform into weight ($w_1,w_2,\dots,w_k$)]。有三种方式聚合其top-K concepts信息：</p>
-<ul>
-<li><p>Non-weighting Integration 平均</p>
-<script type="math/tex; mode=display">
-\mathbf{c}=\frac{1}{k} \cdot \sum_{i=1}^{k} \mathbf{c}_{i}</script></li>
-<li><p>Attention-based weighting Integration 基于注意力机制</p>
-<p>以local entity representation $e_l$ 作query vector，$c_k$ 作为key vector。</p>
-<script type="math/tex; mode=display">
-\alpha_{i}=\frac{\exp \left(\mathbf{e}_{l} \mathbf{c}_{i}^{T}\right)}{\sum_{i=1}^{k} \exp \left(\mathbf{e}_{l} \mathbf{c}_{i}^{T}\right)}\\
-\mathbf{c}=\sum_{i=1}^{k} \alpha_{i} \cdot \mathbf{c}_{i}</script></li>
-<li><p>Prior Knowledge-based weighting Integration 基于先验知识权重聚合</p>
-<p>Assumes that the weighting scores provide a prior probability distribution of concepts</p>
-<script type="math/tex; mode=display">
-\mathbf{c}=\sum_{i=1}^{k} w_{i} \mathbf{c}_{i}</script><script type="math/tex; mode=display">
-\mathbf{c}=\sum_{i=1}^{k} w_{i} \mathbf{c}_{i}</script></li>
-</ul>
-<p>(3) Conept2Entity Links:目的是利用concept representation得到global interactive vector</p>
-<p>将目标实体的concept representation和description vector拼接后</p>
-<script type="math/tex; mode=display">
-\mathbf{u}_{g}=f_{g}\left(\left[\mathbf{h}_{d} ; \mathbf{c}_{h}\right],\left[\mathbf{t}_{d} ; \mathbf{c}_{t}\right]\right)</script><h5 id="Information-aggregation"><a href="#Information-aggregation" class="headerlink" title="Information aggregation"></a>Information aggregation</h5><p>再得到$u_l$(包含contextual information)与$u_g$(external knowledge),引入门控得到最终表示,$\mathbf{g} \in \mathbb{R}^{1 \times d}$为gating vector</p>
-<script type="math/tex; mode=display">
-\mathbf{u}=\mathbf{g} \odot \mathbf{u}_{l}+(\mathbf{E}-\mathbf{g}) \odot \mathbf{u}_{g}</script><p>接着聚合sentence representations得到document vector,分别以 entity 的 local interactive vector、entity 的 global interactive vector 作为 query，对 sentence 表示做 attention，这两个 attention score 再加上一个“entity 出现在 sentence 中”的分数，作为最终的 attention score，来 attention aggregation 得到 document 表示.</p>
-<script type="math/tex; mode=display">
-\mathbf{v}=\sum_{i=1}^{n}\left(\frac{\alpha_{i}+\beta_{i}}{2}+\gamma_{i}\right) \mathbf{s}_{i}\\
-\alpha_{i}=\frac{\exp \left(\mathbf{u}_{l} \mathbf{s}_{i}^{T}\right)}{\sum_{i=1}^{n} \exp \left(\mathbf{u}_{l} \mathbf{s}_{i}^{T}\right)} ; \beta_{i}=\frac{\exp \left(\mathbf{u}_{g} \mathbf{s}_{i}^{T}\right)}{\sum_{i=1}^{n} \exp \left(\mathbf{u}_{g} \mathbf{s}_{i}^{T}\right)}\\
-\gamma_{i}=\left\{\begin{array}{l}
-\frac{1}{z}, s_{i} \in S \\
-0, s_{i} \notin S
-\end{array}\right.</script><p>前一项为Information weight，后一项为empirical weight。</p>
-<h4 id="Predication"><a href="#Predication" class="headerlink" title="Predication"></a>Predication</h4><p>没啥好说的…document representation与entity pair</p>
-<script type="math/tex; mode=display">
-p(r \mid h, t)=g\left(\mathbf{W}_{r}[\mathbf{u} ; \mathbf{v}]^{T}+\mathbf{b}_{r}\right)</script><h3 id="Experiment"><a href="#Experiment" class="headerlink" title="Experiment"></a>Experiment</h3><h4 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h4><div align="center">
-        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/24/162924-7188.png">  
-    </a>
-</div>
-
-<h4 id="消融实验"><a href="#消融实验" class="headerlink" title="消融实验"></a>消融实验</h4><div align="center">
-        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/24/163434-751586.png">  
-    </a>
-</div>
-
-<ul>
-<li><p>有用结论：基于先验置信度信息聚合相比于基于注意力机制的信息聚合（AWI）更能够有效聚合relevant concept 。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/26/112229-231994.png" alt="image-20201126112227804"></p>
 </li>
-<li><p>MIUK-NWI：deterministic KGs ；MIUK：uncertain KGs</p>
-<div align="center">
-        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/24/163600-902501.png">  
-    </a>
-</div>
-
+<li><p>论文贡献</p>
+<ul>
+<li>在不利用任何外部语法工具的情况下表现 SOTA；</li>
+<li>模型可以同时（simultaneously）生成句中每一实体对的表示（ a representation for each pair in the sentence）;</li>
+<li>提出了一种迭代算法来生成实体（距离为）之间唯一的表示；</li>
+</ul>
 </li>
 </ul>
-<h3 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h3><p>文中实验对比的GEDA与DEMMT文章没看</p>
-<p>引入外部知识思路是好的，但是模型设计得太复杂了吧…不是很懂是怎么设计出来的呢？不优雅</p>
-<p>BERT能否作为一个隐形知识库替换呢？</p>
-<p>关注这篇文章的开源工作</p>
+<h3 id="Model"><a href="#Model" class="headerlink" title="Model"></a>Model</h3><p>基于实图的神经关系提取模型，该模型以图的方式来表达一句话中多个实体间的多种关系，其中实体被表示为图中的节点，试图间的关系则构成图的定向边，模型使用一个实体以其上下文初始化实体间的边，这样任意两个实体之间就会形成多个边连接组成的、长度不一的多跳路径。模型通过迭代的方式，将两个实体之间的多条路径逐渐聚合为一条路径，该路径对应于实体关系的最终表示。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/26/144942-462585.png" alt="image-20201126144940767"></p>
+<ul>
+<li><p><strong>Embedding Layer</strong></p>
+<p>生成维度为 , , 的vectors，分别对应于words, 实体的语义类型，目标实体对的相对位置；</p>
+</li>
+<li><p><strong>Bidirectional  LSTM Layer</strong></p>
+<p>Each sentence的词嵌入经过BILSTM得到新的词嵌入 ,对于每一个word，将BILSTM的两条方向的输出进行concat得到的新表示维度为；</p>
+</li>
+<li><p><strong>Edge Representation Layer</strong></p>
+<p>BILSTM的输出包含两个部分：</p>
+<p>（i）目标实体对的表示（target pair representations）</p>
+<p>​    实体若由  个单词组成，则求该平均值作为实体的BILSTM 向量；</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/26/193632-698237.png" alt="image-20201126193629617"></p>
+<p>（ii）目标实体对的上下文表示（target pair-specific context representations）</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/26/210957-790169.png" alt="image-20201126210956239"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/26/210920-82784.png" alt="image-20201126210919476"></p>
+<p> denotes a trainable attention vector.可训练向量；</p>
+<p>Attention 模块计算：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/26/211429-50735.png" alt="image-20201126211428508"></p>
+<p>Representation of an edge:  降维作用</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/26/211042-317124.png" alt="image-20201126211040390"></p>
+</li>
+<li><p><strong>Walk Aggregation Layer</strong></p>
+<p>The goal of the layer:  面向实体间存在有限多路径的情况生成一个唯一的表示；</p>
+<p>one-length walk &lt;=&gt;  </p>
+<ul>
+<li><p>Walk Generation</p>
+<p>A  directed entity graph :</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/26/215610-59901.png" alt="image-20201126215608454"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/26/213847-599305.png" alt="image-20201126213846825"></p>
+</li>
+<li><p>Walk Aggregation</p>
+<p>合并 初始路径 (length 1-to-; direct edge) 与 额外路径（extended walks, length two-to-2;  indirect edge） </p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/26/215845-86358.png" alt="image-20201126215844534"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/26/213916-655500.png" alt="image-20201126213915213"></p>
+<p>表示更短路径的重要程度，越短的路径与最终边的表示越相关，很好理解；</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/26/224250-224193.png" alt="image-20201126224248659"></p>
+</li>
+</ul>
+</li>
+<li><p><strong>Classification Layer</strong></p>
+<p>共计关系，1为 no relation; </p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/26/224339-789806.png" alt="image-20201126224338313"></p>
+</li>
+</ul>
+<h3 id="Experiment"><a href="#Experiment" class="headerlink" title="Experiment"></a>Experiment</h3><ol>
+<li><p>数据集 ACE 2005</p>
+<p>7 entity types, 6 relations type;</p>
+</li>
+<li><p>实验结果（就这点实验结果能发出去？？？这篇文章真的一般….）</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/26/233348-15864.png" alt="image-20201126233346665"></p>
+<p>针对句中出现不同实体数量的对比实验：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/26/233400-119379.png" alt="image-20201126233358199"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/27/103449-495193.png" alt="image-20201127103447775"></p>
+<p>结论：</p>
+<p>在多实体对句中，walks的方法远超SPTree；更短的walk路径对最终的表示更有效；过长的walk（）对于最终的边表示是没有意义的（no-meaningful）</p>
+<ul>
+<li><p>Longer walks improve performance, but —More entities do not necessarily need longer walks</p>
+</li>
+<li><p>Walks can improve the detection of related pairs（召回率指标）</p>
+</li>
+<li><p>Relations between NE pairs are encoded with walks（这个体现了吗？？）</p>
+<p>A:应该是多个 walk  Aggregation，代表的是建模关系之间的联系 encoded</p>
+</li>
+<li><p>Too long relation walks (≥ 6-length) are hard to interpret, even by humans</p>
+</li>
+</ul>
+</li>
+</ol>
 
         </div>
 
@@ -335,7 +340,7 @@ p(r \mid h, t)=g\left(\mathbf{W}_{r}[\mathbf{u} ; \mathbf{v}]^{T}+\mathbf{b}_{r}
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="http://example.com/2021/07/24/1%20Multi-view%20Inference%20for%20Relation%20Extraction%20with%20Uncertain%20Knowledge/">http://example.com/2021/07/24/1%20Multi-view%20Inference%20for%20Relation%20Extraction%20with%20Uncertain%20Knowledge/</a></span>
+                        <span><a href="http://example.com/2021/03/04/ACL2018-A-Walk-based-Model-on-Entity-Graphs-for-Relation-Extraction/">http://example.com/2021/03/04/ACL2018-A-Walk-based-Model-on-Entity-Graphs-for-Relation-Extraction/</a></span>
                     </p>
                 
                 
@@ -358,6 +363,10 @@ p(r \mid h, t)=g\left(\mathbf{W}_{r}[\mathbf{u} ; \mathbf{v}]^{T}+\mathbf{b}_{r}
                 <span>Tag(s):</span>
                 <span class="tag">
                     
+                    
+                        <a href="/tags/Sentence-Level-RE/"># Sentence Level RE</a>
+                    
+                        
                 </span>
             </div>
             <div>
@@ -368,10 +377,10 @@ p(r \mid h, t)=g\left(\mathbf{W}_{r}[\mathbf{u} ; \mathbf{v}]^{T}+\mathbf{b}_{r}
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2021/07/24/1%20Connecting%20the%20Dots%20Document-level%20Neural%20Relation%20Extraction%20with%20Edge-oriented%20Graphs/"></a>
+                <a class="prev" rel="prev" href="/2021/04/21/Arxiv2021-Coarse-to-Fine-Entity-Representations-for-Document-level-Relation-Extraction/">Arxiv2021 | Coarse-to-Fine Entity Representations for Document-level Relation Extraction</a>
             
             
-            <a class="next" rel="next" href="/2021/07/06/hello-world/">Hello World</a>
+            <a class="next" rel="next" href="/2021/02/26/1%20Document-Level-Relation-Extraction-with-Reconstruction/">NLP|论文笔记|Document-Level Relation Extraction with Reconstruction</a>
             
         </section>
 
