@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Chenhs">
+
+
+
+
+
+<title>ACL2020 | Graph Neural Networks with Generated Parameters for Relation Extraction | Chenhs</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        <!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+    });
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">思录</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/Hi">About</a>
+                
+                    <a class="menu-item" href="/Lists">Lists</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">思录</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/Hi">About</a>
+                
+                    <a class="menu-item" href="/Lists">Lists</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">ACL2020 | Graph Neural Networks with Generated Parameters for Relation Extraction</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Chenhs</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">七月 27, 2020&nbsp;&nbsp;17:09:22</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/categories/NLP/">NLP</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="Background"><a href="#Background" class="headerlink" title="Background"></a>Background</h2><ul>
+<li><p>论文动机</p>
+<ol>
+<li>现有的 GNNs 只能在预先定义好的graph上进行 <strong>multi-hop relational reasoning</strong>，并且不能直接应用在自然语言关系推理上。</li>
+<li>discover more accurate relations.</li>
+</ol>
+</li>
+<li><p>论文贡献</p>
+<ol>
+<li>提出了一种具有生成参数的图神经网络<strong>(a  novel graph neural network model with generated parameters)</strong>s。与传统GNN相比，GP-GNNs可以学习边参数，从关系缺失的图或者是具有限数量的边缘类型的图推断扩展到非结构化的文本输入</li>
+<li>证实了GP-GNN具有多条关系推理的能力。</li>
+</ol>
+</li>
+</ul>
+<hr>
+<h2 id="Models"><a href="#Models" class="headerlink" title="Models"></a>Models</h2><p>模型分为三个部分,GP-GNN首先用文本序列构造一个==全连接的同质网络图==，不区分边的类型，通过编码的方式让模型学习边的参数(😏这也是为什么叫生成参数的GNN的原因了)</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/16/093228-408701.png" alt="image-20200716093227612"></p>
+<h3 id="1-编码模块"><a href="#1-编码模块" class="headerlink" title="1. 编码模块"></a>1. 编码模块</h3><p>编码模块将原本序列转换为与边相关的过渡矩阵<strong>(transition matrices corresponding to edges)</strong>,使边能对丰富的语句信息进行编码。</p>
+<p>​                                                            $sequence=\left(x_{0}^{i, j}, x_{1}^{i, j}, \ldots x_{\ell}^{i, j}\right)$</p>
+<p>得到 <strong>Aransition Matrices</strong>：</p>
+<p>​                                            $\mathcal{A}_{i, j}^{(n)}=f\left(E\left(x_{0}^{i, j}\right), E\left(x_{1}^{i, j}\right), \cdots, E\left(x_{l-1}^{i, j}\right) ; \theta_{e}^{n}\right)$</p>
+<p>$f()$是任何可以编码序列数据的模型,例如,LSTMs，GRUs，CNNs，$E()$是 Embedding Function.</p>
+<p>例如：</p>
+<p>​                                                                    $E\left(x_{t}^{i, j}\right)=\left[\boldsymbol{x}_{t} ; \boldsymbol{p}_{t}^{i, j}\right]$</p>
+<p>​                            $\mathcal{A}_{i, j}^{(n)}=\left[\operatorname{MLP}_{n}\left(\operatorname{BiLSTM}_{n}\left(\left(E\left(x_{0}^{i, j}\right), E\left(x_{1}^{i, j}\right), \cdots, E\left(x_{l-1}^{i, j}\right)\right)\right]\right.\right.$</p>
+<p>其中，$\boldsymbol{p}_{t}^{i, j}$是单词$t$相对于实体对的位置   $i,j$   的位置嵌入向量表示；  $\boldsymbol{x}_{t}$  是单词  $x_{t}$  的word embedding.</p>
+<p><strong>n</strong> denotes the index of layer:  <strong>means their parameters are different among layers</strong></p>
+<p><strong>$[\cdot]$  means reshaping a vector as a matrix.</strong></p>
+<p>$\mathcal{A}_{i, j}^{(n)}$指的是entity $i$和entity $j$在 gcn 第n层的边的权重（作为图中的参数），由此我们可以了解到：</p>
+<p><strong>==在gcn的每一层，边的权重都是要计算的==</strong>（现在可以联想到生成参数是怎么回事了吧？）</p>
+<h3 id="2-传播模块"><a href="#2-传播模块" class="headerlink" title="2. 传播模块"></a>2. 传播模块</h3><p><strong>传播模块逐层学习节点的表示形式。</strong>使用GCN在节点之间传播关系信息，节点的初始表示与任务相关，</p>
+<p>​                                                                $\mathbf{h}_{i}^{(n+1)}=\sum_{v_{j} \in \mathcal{N}\left(v_{i}\right)} \sigma\left(\mathcal{A}_{i, j}^{(n)} \mathbf{h}_{j}^{(n)}\right)$</p>
+<p><strong>The Initial embeddings of nodes</strong></p>
+<p>Annotators $a_{subject}$ and $a_{object}$ could also carry ==the prior knowledge== about subject entity and object entity.</p>
+<p> (不太懂的操作？【0，1】，【1，0 】)</p>
+<h3 id="3-分类模块"><a href="#3-分类模块" class="headerlink" title="3. 分类模块"></a>3. 分类模块</h3><p><strong>将实体$v_i$和$v_j$的K层的信息都利用起来</strong>计算两个节点之间的关系表示 $\boldsymbol{r}_{v_{i}, v_{j}}$</p>
+<p>​                                    $\boldsymbol{r}_{v_{i}, v_{j}}=\left[\left[\boldsymbol{h}_{v_{i}}^{(1)} \odot \boldsymbol{h}_{v_{j}}^{(1)}\right]^{\top} ;\left[\boldsymbol{h}_{v_{i}}^{(2)} \odot \boldsymbol{h}_{v_{j}}^{(2)}\right]^{\top} ; \ldots ;\left[\boldsymbol{h}_{v_{i}}^{(K)} \odot \boldsymbol{h}_{v_{j}}^{(K)}\right]^{\top}\right]$</p>
+<p>​                                                $\mathbb{P}\left(r_{v_{i}, v_{j}} \mid h, t, s\right)=\operatorname{softmax}\left(\operatorname{MLP}\left(\boldsymbol{r}_{v_{i}, v_{j}}\right)\right)$</p>
+<p>​                                                        $\mathcal{L}=\sum_{s \in S} \sum_{i \neq j} \log \mathbb{P}\left(r_{v_{i}, v_{j}} \mid i, j, s\right)$</p>
+<p><strong>==计算loss的时候会不会计算量太大了呢？？==</strong></p>
+<hr>
+<h2 id="Experiment"><a href="#Experiment" class="headerlink" title="Experiment"></a>Experiment</h2><ul>
+<li><p><strong>对比模型</strong></p>
+<p>Context-Aware RE（上下文感知RE 由Sorokin &amp; Gurevych (2017)提出）</p>
+<p>Multi-Window CNN.（多窗口的CNN 由Zeng et al. (2014)）</p>
+<p>PCNN, proposed （由 Zeng et al. (2015)提出）</p>
+<p>LSTM or GP-GNN （ K = 1 ）双向 LSTM,可以看作模型的1层变体。</p>
+<p>K=2 或 K=3 的 GP-GNN，可以进行 2 跳推理和 3 跳推理。</p>
+</li>
+<li><p><strong>实验数据集</strong></p>
+<ol>
+<li><p>Distantly labeled set</p>
+<p>2017年Sorokin和Gurevych等人利用Wikipedia corpora构造的一个数据集。</p>
+<p>本文任务与其任务之间有一个小区别：本文任务是提取句子中每对实体之间的关系，而他们的任务是提取给定实体对与上下文实体对之间的关系(extract the relationship between the given entity pair and the context entity pairs.) 。因此作者做了以下修改：</p>
+<p>1）如果给定三元组中没有reversed edges，例如如果句子中存在三元组（Earth, partof, Solar System），则向其添加一个反向标签（Solar System, has a member, Earth）；</p>
+<p>2）对于所有没有关系的实体对，在它们之间添加了“NA”标签。（<strong>也作为有标签的训练数据</strong>？）</p>
+</li>
+<li><p>Human annotated test set</p>
+<p>测试集中有350个句子和1230个三元组（人工精标）</p>
+</li>
+<li><p>Dense distantly labeled test set</p>
+<p>实体数量应严格大于2；句子的真实标签中必须至少one circle（至少有三个实体）（==圆的每个边都有一个非“NA”标签==?）。该测试集可用于测试论文方法在实体之间具有复杂相互作用的句子上的表现，该测试集中有1350个句子、超过17915个三元组和7906个关系。</p>
+</li>
+</ol>
+</li>
+<li><p><strong>实验结果分析</strong>（==<strong>实验结果是在词袋上的？？</strong>==）</p>
+<p>在三个测试集中都表现为最佳。特别是在Dense distantly labeled test set （多实体情况中）</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/16/153843-71442.png" alt="image-20200716153840977"></p>
+</li>
+</ul>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/16/153851-226031.png" alt="image-20200716153851564"></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Chenhs</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://example.com/2020/07/27/ACL2019%20Graph%20Neural%20Networks%20with%20Generated%20Parameters%20for%20Relation%20Extraction/">http://example.com/2020/07/27/ACL2019%20Graph%20Neural%20Networks%20with%20Generated%20Parameters%20for%20Relation%20Extraction/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>😀😁😂🤣😃😄😅😆</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Sentence-Level-RE/"># Sentence Level RE</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2021/01/23/ACL2020%20Reasoning%20with%20Latent%20Structure%20Refinement%20for%20Document-Level%20Relation%20Extraction%20%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/">ACL2020 | Reasoning with Latent Structure Refinement for Document-Level Relation Extraction</a>
+            
+            
+        </section>
+
+
+    </article>
+</div>
+
+
+
+
+
+
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Chenhs | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a>
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<span class="site-uv">
+    总访客量:
+    <i class="busuanzi-value" id="busuanzi_value_site_uv"></i>
+</span>&nbsp;
+
+
+<span class="site-pv">
+    总访问量:
+    <i class="busuanzi-value" id="busuanzi_value_site_pv"></i>
+</span>
+
+</span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
