@@ -12,7 +12,7 @@
 
 
 
-<title>Hello World | Chenhs</title>
+<title>Chenhs</title>
 
 
 
@@ -214,7 +214,7 @@
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">Hello World</h1>
+            <h1 class="post-title"></h1>
             
                 <div class="post-meta">
                     
@@ -223,7 +223,7 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">七月 6, 2021&nbsp;&nbsp;19:34:00</a>
+                        Date: <a href="#">七月 24, 2021&nbsp;&nbsp;16:07:32</a>
                         </span>
                     
                     
@@ -232,19 +232,95 @@
         </header>
 
         <div class="post-content">
-            <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+            <h3 id="Snapshot"><a href="#Snapshot" class="headerlink" title="Snapshot"></a>Snapshot</h3><ul>
+<li><p>模型名称：MIUK</p>
+</li>
+<li><p>论文来源：AAAI 2021 北大</p>
+</li>
+<li><p>面向任务：DocRED</p>
+</li>
+<li><p>论文动机：利用来自KGs的先验知识提升关系抽取的性能表现</p>
+</li>
+<li><p>指标分数：Ign F1:58.05，F1:59.99</p>
+</li>
+<li><p>快看速评：一篇融合local context与global kownledge的文章，通过检索KGs中与目标实体关联的concept作为补充信息，通过三种视角concept/entity/mention view聚合目标实体信息；对于KGs的选择，uncertain KGs （ConceptNet，ProBase）相对于 deterministic KGs 更容易捕获相关信息；同时作者还构建了一个实体、概念的文本描述知识库作为目标实体的补充语义信息 (ProBase_Desp)</p>
+<blockquote>
+<p>Given two words (typically two entities or an entity and a concept) and a relation, uncertain KGs provide <strong>a confidence score</strong> that measures <strong>the possibility of</strong> the two words have the given relation. </p>
+</blockquote>
+</li>
+<li><p>代码复现：<a target="_blank" rel="noopener" href="https://github.com/pkuserc/AAAI2021-MIUK-Relation-Extraction">https://github.com/pkuserc/AAAI2021-MIUK-Relation-Extraction</a></p>
+</li>
+</ul>
+<h3 id="Method"><a href="#Method" class="headerlink" title="Method"></a>Method</h3><h4 id="Input"><a href="#Input" class="headerlink" title="Input"></a>Input</h4><p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/24/151722-906134.png" alt="image-20210324151720692"></p>
+<ul>
+<li>Input ducument : 借助entity anchors标记实体的所有提及 </li>
+<li>Uncertain KG(Probase)： 从ProBase中检索 top-K concepts以及其置信度得分</li>
+<li>Entity and Concept Descriptions： 与实体有关的the first two paragraphs作为补充信息</li>
+</ul>
+<h4 id="Cross-view-Inference-Framework"><a href="#Cross-view-Inference-Framework" class="headerlink" title="Cross-view Inference Framework"></a>Cross-view Inference Framework</h4><h5 id="Cross-view-Links"><a href="#Cross-view-Links" class="headerlink" title="Cross-view Links"></a>Cross-view Links</h5><p>(1) Mention2Entity Links: 目的是为了得到entity embedding</p>
+<p>再得到mention embedding之后，与以往直接平均mention embedding得到entity vector不同，这篇paper认为加个权重不错的😎，此权重从何而来？答曰：entity descriptions</p>
+<p>方法：以mention embedding作为key vector,entity description为query vector，计算权重。</p>
+<script type="math/tex; mode=display">
+\alpha_{i}=\frac{\exp \left(\mathbf{e}_{d} \mathbf{m}_{i}^{T}\right)}{\sum_{i=1}^{t} \exp \left(\mathbf{e}_{d} \mathbf{m}_{i}^{T}\right)}\\
+\mathbf{e}_{l}=\sum_{i=1}^{t} \alpha_{i} \cdot \mathbf{m}_{i}</script><p>得到local entity represnetation $e_l$, 进一步添加minimum distance ($d_{ht}=-d_{th}$)得到local interactive vector:</p>
+<script type="math/tex; mode=display">
+\mathbf{u}_{l}=f_{l}\left(\left[\mathbf{h}_{l} ; \mathbf{d}_{h t}\right],\left[\mathbf{t}_{l} ; \mathbf{d}_{t h}\right]\right)</script><p>(2) Entity2Concept Links：目的是为了得到与目标实体相关的concept vector</p>
+<p>对于目标实体$e$，从ProBase中检索与其相关 top-K concepts（$c_1,c_2,\dots,c_k$）以及其置信度得分[transform into weight ($w_1,w_2,\dots,w_k$)]。有三种方式聚合其top-K concepts信息：</p>
+<ul>
+<li><p>Non-weighting Integration 平均</p>
+<script type="math/tex; mode=display">
+\mathbf{c}=\frac{1}{k} \cdot \sum_{i=1}^{k} \mathbf{c}_{i}</script></li>
+<li><p>Attention-based weighting Integration 基于注意力机制</p>
+<p>以local entity representation $e_l$ 作query vector，$c_k$ 作为key vector。</p>
+<script type="math/tex; mode=display">
+\alpha_{i}=\frac{\exp \left(\mathbf{e}_{l} \mathbf{c}_{i}^{T}\right)}{\sum_{i=1}^{k} \exp \left(\mathbf{e}_{l} \mathbf{c}_{i}^{T}\right)}\\
+\mathbf{c}=\sum_{i=1}^{k} \alpha_{i} \cdot \mathbf{c}_{i}</script></li>
+<li><p>Prior Knowledge-based weighting Integration 基于先验知识权重聚合</p>
+<p>Assumes that the weighting scores provide a prior probability distribution of concepts</p>
+<script type="math/tex; mode=display">
+\mathbf{c}=\sum_{i=1}^{k} w_{i} \mathbf{c}_{i}</script><script type="math/tex; mode=display">
+\mathbf{c}=\sum_{i=1}^{k} w_{i} \mathbf{c}_{i}</script></li>
+</ul>
+<p>(3) Conept2Entity Links:目的是利用concept representation得到global interactive vector</p>
+<p>将目标实体的concept representation和description vector拼接后</p>
+<script type="math/tex; mode=display">
+\mathbf{u}_{g}=f_{g}\left(\left[\mathbf{h}_{d} ; \mathbf{c}_{h}\right],\left[\mathbf{t}_{d} ; \mathbf{c}_{t}\right]\right)</script><h5 id="Information-aggregation"><a href="#Information-aggregation" class="headerlink" title="Information aggregation"></a>Information aggregation</h5><p>再得到$u_l$(包含contextual information)与$u_g$(external knowledge),引入门控得到最终表示,$\mathbf{g} \in \mathbb{R}^{1 \times d}$为gating vector</p>
+<script type="math/tex; mode=display">
+\mathbf{u}=\mathbf{g} \odot \mathbf{u}_{l}+(\mathbf{E}-\mathbf{g}) \odot \mathbf{u}_{g}</script><p>接着聚合sentence representations得到document vector,分别以 entity 的 local interactive vector、entity 的 global interactive vector 作为 query，对 sentence 表示做 attention，这两个 attention score 再加上一个“entity 出现在 sentence 中”的分数，作为最终的 attention score，来 attention aggregation 得到 document 表示.</p>
+<script type="math/tex; mode=display">
+\mathbf{v}=\sum_{i=1}^{n}\left(\frac{\alpha_{i}+\beta_{i}}{2}+\gamma_{i}\right) \mathbf{s}_{i}\\
+\alpha_{i}=\frac{\exp \left(\mathbf{u}_{l} \mathbf{s}_{i}^{T}\right)}{\sum_{i=1}^{n} \exp \left(\mathbf{u}_{l} \mathbf{s}_{i}^{T}\right)} ; \beta_{i}=\frac{\exp \left(\mathbf{u}_{g} \mathbf{s}_{i}^{T}\right)}{\sum_{i=1}^{n} \exp \left(\mathbf{u}_{g} \mathbf{s}_{i}^{T}\right)}\\
+\gamma_{i}=\left\{\begin{array}{l}
+\frac{1}{z}, s_{i} \in S \\
+0, s_{i} \notin S
+\end{array}\right.</script><p>前一项为Information weight，后一项为empirical weight。</p>
+<h4 id="Predication"><a href="#Predication" class="headerlink" title="Predication"></a>Predication</h4><p>没啥好说的…document representation与entity pair</p>
+<script type="math/tex; mode=display">
+p(r \mid h, t)=g\left(\mathbf{W}_{r}[\mathbf{u} ; \mathbf{v}]^{T}+\mathbf{b}_{r}\right)</script><h3 id="Experiment"><a href="#Experiment" class="headerlink" title="Experiment"></a>Experiment</h3><h4 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h4><div align="center">
+        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/24/162924-7188.png">  
+    </a>
+</div>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+<h4 id="消融实验"><a href="#消融实验" class="headerlink" title="消融实验"></a>消融实验</h4><div align="center">
+        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/24/163434-751586.png">  
+    </a>
+</div>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>有用结论：基于先验置信度信息聚合相比于基于注意力机制的信息聚合（AWI）更能够有效聚合relevant concept 。</p>
+</li>
+<li><p>MIUK-NWI：deterministic KGs ；MIUK：uncertain KGs</p>
+<div align="center">
+        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/24/163600-902501.png">  
+    </a>
+</div>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+</li>
+</ul>
+<h3 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h3><p>文中实验对比的GEDA与DEMMT文章没看</p>
+<p>引入外部知识思路是好的，但是模型设计得太复杂了吧…不是很懂是怎么设计出来的呢？不优雅</p>
+<p>BERT能否作为一个隐形知识库替换呢？</p>
+<p>关注这篇文章的开源工作</p>
 
         </div>
 
@@ -259,7 +335,7 @@
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="http://example.com/2021/07/06/hello-world/">http://example.com/2021/07/06/hello-world/</a></span>
+                        <span><a href="http://example.com/2021/07/24/1%20Multi-view%20Inference%20for%20Relation%20Extraction%20with%20Uncertain%20Knowledge/">http://example.com/2021/07/24/1%20Multi-view%20Inference%20for%20Relation%20Extraction%20with%20Uncertain%20Knowledge/</a></span>
                     </p>
                 
                 
@@ -292,10 +368,10 @@
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2021/07/24/A-Walk-based-Model-on-Entity-Graphs-for-Relation-Extraction/">A Walk-based Model on Entity Graphs for Relation Extraction</a>
+                <a class="prev" rel="prev" href="/2021/07/24/1%20Connecting%20the%20Dots%20Document-level%20Neural%20Relation%20Extraction%20with%20Edge-oriented%20Graphs/"></a>
             
             
-            <a class="next" rel="next" href="/2021/05/13/AAAI2021%20Document-Level-Relation-Extraction-with-Reconstruction/">AAAI2021 | Document-Level Relation Extraction with Reconstruction</a>
+            <a class="next" rel="next" href="/2021/07/24/A-Walk-based-Model-on-Entity-Graphs-for-Relation-Extraction/">A Walk-based Model on Entity Graphs for Relation Extraction</a>
             
         </section>
 

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Chenhs">
+
+
+
+
+
+<title>Chenhs</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        <!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+    });
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">思录</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/Hi">About</a>
+                
+                    <a class="menu-item" href="/Lists">Lists</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">思录</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/Hi">About</a>
+                
+                    <a class="menu-item" href="/Lists">Lists</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title"></h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Chenhs</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">七月 24, 2021&nbsp;&nbsp;16:07:32</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h3 id="Snapshot"><a href="#Snapshot" class="headerlink" title="Snapshot"></a>Snapshot</h3><ul>
+<li><p>模型名称：ATLOP</p>
+</li>
+<li><p>论文来源：AAAI 2021 南加利福尼亚</p>
+</li>
+<li><p>面向任务：DocRED</p>
+</li>
+<li><p>方法分类：BERT-based</p>
+<blockquote>
+<p>观点：It is unclear weather graph structures still help on the top of pre-trained  language models.</p>
+</blockquote>
+</li>
+<li><p>论文动机：文档级关系抽取中的多标签问题一直没有受到重视(multi-label)；文档中会包含多对实体对且每个实体对中的实体会在文档中提及多次，处于不同实体对中同一实体的representation，其对周围context的需求是不同的。</p>
+</li>
+<li><p>指标分数：</p>
+<ul>
+<li>Ign F1: 59.31 F1: 61.30 (BERT-base)</li>
+<li>Ign F1: 61.39 F1: 63.40 (RoBERTa-base)</li>
+</ul>
+</li>
+<li><p>快看速评：统计表明，7%的实体对不止存在一种关系；其实有必要去关注下多标签的问题，再者针对阈值的设定，一个固定的，global阈值显然不合理，对于不同的关系类型，动态阈值会更加合适。（文中提出a learnable threshold class）这篇paper从耳熟能详的问题出发，解决了两个本质上的问题，同时也是基本的问题，文风也较为行云流水。 </p>
+</li>
+<li><p>代码复现：<a target="_blank" rel="noopener" href="https://github.com/wzhouad/ATLOP">https://github.com/wzhouad/ATLOP</a></p>
+</li>
+</ul>
+<h3 id="Method"><a href="#Method" class="headerlink" title="Method"></a>Method</h3><h4 id="Enhanced-BERT-baseline"><a href="#Enhanced-BERT-baseline" class="headerlink" title="Enhanced BERT baseline"></a>Enhanced BERT baseline</h4><ul>
+<li><p>Mentions 标识：Inserting “*” symbol at the start and end of mentions.</p>
+</li>
+<li><p>Smooth version of max pooling：取代了之前的求平均</p>
+<script type="math/tex; mode=display">
+\boldsymbol{h}_{e_{i}}=\log \sum_{j=1}^{N_{e_{i}}} \exp \left(\boldsymbol{h}_{m_{j}^{i}}\right)</script></li>
+<li><p>Group bilinear：将entity pair各自的embedding切分为$k$块，两个实体的每一块各自bilinear，最后将logit相加，再归一，这样将参数量从$d^2$缩减到$d^2/k$ (TODO4)</p>
+<script type="math/tex; mode=display">
+\left[z_{s}^{1} ; \ldots ; z_{s}^{k}\right]=z_{s}\\
+\left[z_{o}^{1} ; \ldots ; z_{o}^{k}\right]=z_{o}\\
+P\left(r \mid e_{s}, e_{o}\right)=\sigma\left(\sum_{i=1}^{k} z_{s}^{i_{\top}} W_{r}^{i} z_{o}^{i}+b_{r}\right)</script></li>
+</ul>
+<h4 id="Adaptive-Thresholding"><a href="#Adaptive-Thresholding" class="headerlink" title="Adaptive Thresholding"></a>Adaptive Thresholding</h4><p>问题，针对关系？还是针对每个实例的实体对？</p>
+<p>回想之前设置阈值的方法，<strong>人为枚举，验证挑选。</strong>一个global的阈值 $\theta$ 并不能适用于所有的实体对的关系分类（$\mathrm{P}\left(r \mid e_{s}, e_{o}\right)&gt;\theta$, return 关系 $r$ ,or return $NA$）</p>
+<blockquote>
+<p>One global threshold does not suffice.</p>
+</blockquote>
+<p>设定Positive labels (当前实体对间存在的关系)与 Negative labels（当前实体对不存在的关系）</p>
+<p>原则：The logits of positive labels should be higher than the threshold while those of negative labels should be lower. 两者的差距越大越好</p>
+<p>方法：引入threshold class TH，作为一个关系类别存在，一对 entity pair 属于 TH class 的概率的计算方式，与其它所有 relation 的分数计算方式也是一样的。</p>
+<div align="center">
+        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/23/170927-516569.png">  
+    </a>
+</div>
+
+<p>在测试阶段，我们返回的relation class是比 TH class 的logits要高的class作为结果，训练阶段损失函数如下：</p>
+<p>$\mathcal{L}_{1}$: positive class 大于 TH class</p>
+<p>Push the logits of all positive labels to be higher than the TH class </p>
+<script type="math/tex; mode=display">
+\mathcal{L}_{1}=-\sum_{r \in \mathcal{P}_{T}} \log \left(\frac{\exp \left(\operatorname{logit}_{r}\right)}{\sum_{r^{\prime} \in \mathcal{P}_{T} \cup\{\mathrm{TH}\}} \exp \left(\operatorname{logit}_{r^{\prime}}\right)}\right)</script><p>$\mathcal{L}_{2}$: TH class 大于 negative class </p>
+<p>Pull the logits of negative labels to be lower than the TH class</p>
+<script type="math/tex; mode=display">
+\mathcal{L}_{2}=-\log \left(\frac{\exp \left(\operatorname{logit}_{\mathrm{TH}}\right)}{\sum_{r^{\prime} \in \mathcal{N}_{T} \cup\{\mathrm{TH}\}} \exp \left(\operatorname{logit}_{r^{\prime}}\right)}\right)</script><script type="math/tex; mode=display">
+\mathcal{L}=\mathcal{L}_{1}+\mathcal{L}_{2}</script><h4 id="Localized-Context-Pooling"><a href="#Localized-Context-Pooling" class="headerlink" title="Localized Context Pooling"></a>Localized Context Pooling</h4><div align="center">
+        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/23/215036-254531.png">  
+    </a>
+</div>
+
+<p>实体表示不能由唯一的embedding表示，在不同的实体对中，实体的含义与表达要根据其上下文而定(Attend to the relevant context that useful to decide the relations for the entity pair.)</p>
+<p>利用token-level attention heads $A_{ijk}$（transformer last layer），表示在第$i_{th}$ heads中token $k$ 对 token $j$ 的重要程度。将“*” symbol attention 作为mention-level attention, 将mention-level attention 加和平均得到entity-level attention  $\boldsymbol{A}_{i}^{E} \in \mathbb{R}^{H \times l}$，$i$ 表示第$i_{th}$ entity $H$ 为 attention heads。</p>
+<blockquote>
+<p>Use the attention of “*” at the mentions as the mention-level attention. and average mention-level attentions of the same entity as the entity-level attention $A^E$ .</p>
+</blockquote>
+<p>对于一对实体对来说，我们关心的是对于当前的这一实体对，与之最有关的context token, 计算方式如下：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{A}^{(s, o)}=\boldsymbol{A}_{s}^{E} \cdot \boldsymbol{A}_{o}^{E}</script><blockquote>
+<p>上式为哈达玛积，意义：The weights of tokens are derived by multiplying the attention weights of the subject entity $E_s$ and the object entity $E_o$ from the last transformer layer so that only the tokens that are important to both entities receive higher weights.</p>
+</blockquote>
+<p>Attention heads aggregation:</p>
+<script type="math/tex; mode=display">
+q^{(s, o)}=\sum_{i=1}^{H} A_{i}^{(s, o)}</script><p>Normalize to 1:</p>
+<script type="math/tex; mode=display">
+a^{(s, o)}=q^{(s, o)} / 1^{T} q^{(s, o)}</script><p>Relevant context aggregation: (猜测…..这里不是特别清楚) </p>
+<script type="math/tex; mode=display">
+c^{(s, o)}=H^{T} a^{(s, o)}</script><p>Add the localized context to entity pair representation:</p>
+<p>相当于丰富了原始实体的表示</p>
+<script type="math/tex; mode=display">
+z_{S}^{(s, o)}=\tanh \left(W_{s} h_{e_{s}}+W_{c_{1}} c^{(s, o)}\right)\\
+z_{o}^{(s, o)}=\tanh \left(W_{o} h_{e_{o}}+W_{c_{2}} c^{(s, o)}\right)</script><h3 id="Experiments"><a href="#Experiments" class="headerlink" title="Experiments"></a>Experiments</h3><h4 id="性能表现："><a href="#性能表现：" class="headerlink" title="性能表现："></a>性能表现：</h4><div align="center">
+        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/23/230925-727895.png">  
+    </a>
+</div>
+
+<h4 id="消融实验："><a href="#消融实验：" class="headerlink" title="消融实验："></a>消融实验：</h4><div align="center">
+        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/23/232202-836232.png">  
+    </a>
+</div>
+- Logsumexp Pooling, Group Bilinear对性能都有一个点的提升(原因待探究TODO5)
+- entity marker 对性能的影响很小
+
+#### 阈值选择策略
+
+全局 vs 分类别阈值 vs 自适应阈值
+
+<div align="center">
+        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/23/232350-436614.png">  
+    </a>
+</div>
+
+<p>分类别阈值设置在验证集上最优，测试集上最差，泛化能力不足？</p>
+<h4 id="上下文池化"><a href="#上下文池化" class="headerlink" title="上下文池化"></a>上下文池化</h4><p>Localized context pooling (LOP)在实体数量越来越多时，提升幅度也逐渐变大，在entity数量&lt;5个时候，pooling没有什么用，</p>
+<div align="center">
+        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/23/232710-425897.png">  
+    </a>
+</div>
+
+<h3 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h3><ol>
+<li><p>以往都是怎么缓解在DocRED中多分类问题的呢？</p>
+</li>
+<li><p>了解下CorefBERT（Coreferential reasoning learning for language representation）</p>
+</li>
+<li><p>关键还是在于提升多实体下的性能表现才是最本质最需要解决的问题。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://liwt31.github.io/2018/10/12/mul-complexity/">https://liwt31.github.io/2018/10/12/mul-complexity/</a> 矩阵、张量乘法的时间复杂度分析</p>
+</li>
+<li><p>Logsumexp Pooling, Group Bilinear为什么会带来性能的提升？</p>
+<p><a target="_blank" rel="noopener" href="https://arxiv.org/abs/1904.02347">Document-Level N-ary Relation Extraction with Multiscale Representation Learning</a></p>
+</li>
+<li><p>文献：</p>
+<p>Zheng, H.; Fu, J.; Zha, Z.-J.; and Luo, J. 2019. Learning Deep Bilinear Transformation for Fine-grained Image Representation. In NeurIPS.</p>
+<p>Tang, Y.; Huang, J.; Wang, G.; He, X.; and Zhou, B. 2020b. Orthogonal Relation Transforms with Graph Context Modeling for Knowledge Graph Embedding. In ACL.</p>
+<p>Fan, R.-E.; and Lin, C.-J. 2007. A study on threshold selec- tion for multi-label classification. Department of Computer Science, National Taiwan University 1–23. 计算 treshold 的算法</p>
+</li>
+<li><p>参考链接：<a target="_blank" rel="noopener" href="https://ivenwang.com/2021/01/22/atlop/">https://ivenwang.com/2021/01/22/atlop/</a></p>
+</li>
+</ol>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Chenhs</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://example.com/2021/07/24/1%20Document-Level%20Relation%20Extraction%20with%20Adaptive%20Thresholding%20and/">http://example.com/2021/07/24/1%20Document-Level%20Relation%20Extraction%20with%20Adaptive%20Thresholding%20and/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>😀😁😂🤣😃😄😅😆</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2021/07/24/1%20Downstream%20Model%20Design%20of%20Pre-trained%20Language%20Model%20for%20Relation%20Extraction%20Task%20%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/"></a>
+            
+            
+            <a class="next" rel="next" href="/2021/07/24/1%20Document-level%20RE/"></a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+
+
+
+
+
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Chenhs | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a>
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<span class="site-uv">
+    总访客量:
+    <i class="busuanzi-value" id="busuanzi_value_site_uv"></i>
+</span>&nbsp;
+
+
+<span class="site-pv">
+    总访问量:
+    <i class="busuanzi-value" id="busuanzi_value_site_pv"></i>
+</span>
+
+</span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>

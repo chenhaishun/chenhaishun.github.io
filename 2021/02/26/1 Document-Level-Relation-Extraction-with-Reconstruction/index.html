@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Chenhs">
+
+
+
+
+
+<title>NLP|论文笔记|Document-Level Relation Extraction with Reconstruction | Chenhs</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        <!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+    });
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">思录</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/Hi">About</a>
+                
+                    <a class="menu-item" href="/Lists">Lists</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">思录</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/Hi">About</a>
+                
+                    <a class="menu-item" href="/Lists">Lists</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">NLP|论文笔记|Document-Level Relation Extraction with Reconstruction</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Chenhs</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">二月 26, 2021&nbsp;&nbsp;15:08:54</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/categories/NLP/">NLP</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h3 id="Snapshot"><a href="#Snapshot" class="headerlink" title="Snapshot"></a>Snapshot</h3><ul>
+<li><p>论文来源：AAAI 2021</p>
+</li>
+<li><p>面向任务：DocRE</p>
+</li>
+<li><p>方法分类：Graph-based</p>
+</li>
+<li><p>论文动机：</p>
+<p>通常情况下，基于构建图所学习得到的graph representation往往会建模所有实体对之间的关系信息，而不管这些实体对之间是否真的存在关系，这就导致了那些本不存在关系的实体对 减弱/分散（disperse）模型在有关系存在的实体对上的注意力；基于此，作者提出针对图的结构进行“重构”，从而让有关系的entity pair 连接更强，没关系的更弱，<strong>对路径进行重构</strong>。（=pay more attention to model entity pairs with ground-truth relationships.）</p>
+<blockquote>
+<p>对图结构进行调整，这点和LSR的出发点有点相像？</p>
+</blockquote>
+</li>
+<li><p>指标分数：</p>
+<p>F1 score: <strong>55.23, 59.45</strong>（w/o BERT, w/ BERT）</p>
+<p>Ign F1 score: <strong>53.27, 57.12</strong>（w/o BERT, w/ BERT）</p>
+</li>
+<li><p>快看速评：</p>
+<p>当实体间存在关系，那么图结构中相应的实体节点之间就存在强大的路径依赖(strong path dependency)，反之，没有关系实体节点之间仅仅只有weak path denpendency。为了贯彻这一“强者愈强，弱者愈弱”的思想，基于上述假设，作者定义了三种类型的meta path来加强有关系实体对之间的路径，<strong>本质上不是重建了边，而是增强了inference path。</strong></p>
+</li>
+<li><p>代码复现：<a target="_blank" rel="noopener" href="https://github.com/xwjim/DocRE-Rec">https://github.com/xwjim/DocRE-Rec</a></p>
+</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/chenhaishun/test_pic/master/typora202102/26/123327-379682.png" alt="7,8,9之间，仅有7,9实体间实际存在关系"></p>
+<h3 id="Method"><a href="#Method" class="headerlink" title="Method"></a>Method</h3><h5 id="Baseline-model："><a href="#Baseline-model：" class="headerlink" title="Baseline model："></a>Baseline model：</h5><ul>
+<li><p><em>Graph Construction</em>: </p>
+<p>与EoG类似建图方式类似，还是三种不同类型的节点，Mention node, Entity node, Sentence node；边的类型有 MM edge, MS edge, ME edge, SS edge, ES edge；</p>
+<p>另外，本文额外增添一种类型的边，Mention-Coreference edge以连接同一实体的不同mention。</p>
+<blockquote>
+<p>MC 应该是独立于MM edge？</p>
+</blockquote>
+</li>
+<li><p><em>Graph  Encoder</em>: </p>
+<p>Dense connected GAT。经由密集连接的GAT得到entity的representation：                                 </p>
+<script type="math/tex; mode=display">
+\mathbf{z}_{n}^{l}=\mathbf{W}_{e}^{l} \cdot\left[\mathbf{v}_{n}: \mathbf{s}_{n}^{1}: \mathbf{s}_{n}^{2}: \cdots: \mathbf{s}_{n}^{l-1}\right]</script><p>其中，$[ \mathbf{s}_{n}^{1}: \mathbf{s}_{n}^{2}: \cdots: \mathbf{s}_{n}^{l-1}]$ 为所有先前hop reasoning 操作的输出；在每一步推理过程中(hop reasoning)，根据每一种类型的edge，capture当前节点与周围节点之间的特征信息(self-attention)：                                   </p>
+<script type="math/tex; mode=display">
+\mathbf{s}_{n}^{l}=\operatorname{softmax}\left(\frac{\mathbf{z}_{n}^{l} \mathbf{K}^{\top}}{\sqrt{d_{0}}}\right) \mathbf{V}</script></li>
+<li><p><em>Classifier</em>:  </p>
+<p>$L$ 次 hop reasoning 后 (相当于有$L$层密集连接层，好好想想~)，得到序列$[ \mathbf{s}_{n}^{1}: \mathbf{s}_{n}^{2}: \cdots: \mathbf{s}_{n}^{L}]$， 最后每一节点再经过一层非线性变换得到异构图表示：$\left\{\mathbf{q}_{1}, \mathbf{q}_{2}, \cdots, \mathbf{q}_{N}\right\}$                                 </p>
+<script type="math/tex; mode=display">
+\mathbf{q}_{n}=\operatorname{Relu}\left(\mathbf{W}_{o} \cdot\left[\mathbf{v}_{n}: \mathbf{s}_{n}^{1}: \cdots: \mathbf{s}_{n}^{L}\right]\right)​</script><p>每一对实体对间计算存在某种关系(r)的可能性：</p>
+<script type="math/tex; mode=display">
+R(r)=P\left(r \mid\left\{e_{i}, e_{j}\right\}\right)=\operatorname{sigmoid}\left(\operatorname{MLP}\left(\left[\mathbf{q}_{i}: \mathbf{q}_{j}\right]\right)\right)</script><p>BCE（binary cross-entropy, 二分类,遍历所有的实体对以及关系类型）计算Loss:                          </p>
+<script type="math/tex; mode=display">
+\operatorname{Loss}_{c}=-\frac{1}{\sum_{t=0}^{T} N_{t}} \sum_{t=1}^{T} \sum_{n=1}^{N_{t}}\left\{r_{n}^{t} \log \left(R\left(r_{n}^{t}\right)\right)\right.\left.+\left(1-r_{n}^{t}\right) \log \left(1-R\left(r_{n}^{t}\right)\right)\right\}</script></li>
+</ul>
+<h5 id="Our-model"><a href="#Our-model" class="headerlink" title="Our model"></a>Our model</h5><div align="center">
+        <img src="https://raw.githubusercontent.com/chenhaishun/test_pic/master/typora202102/26/172739-530697.png">  
+    </a>
+</div>
+
+<ul>
+<li>问题一：我们需要增强哪条路径？</li>
+</ul>
+<p>人为定义三种类型的meta path: Pattern Recognition, Logical Reasoning, Coreference Reasoning;（可能就是为了符合DocRED数据集中所要求的那几种推理类型，我猜的）</p>
+<p>所有的实体对间至少存在一种上述的meta path，三种 meta path <u>优先级</u>：meta-path1 &gt; meta-path2 &gt; meta-path3。（如果一个entity pair里有多条符合meta path的路径，按照上述优先级保留一条即可）</p>
+<blockquote>
+<p>通常，相同的meta path可能会有多条实例路径，此时选用文档中首次出现的实例路径。</p>
+</blockquote>
+<ul>
+<li><p>问题二：怎么增强此类型路径？</p>
+<p>对于一条路径，把它看做是一系列节点的序列，最大化这条路径出现(序列生成？)的概率。</p>
+<p>利用LSTM建模，输入已选择路径中每个节点表示$q$(GAT输出表示)，输出LSTM隐藏状态$p$,softmax计算节点出现的条件概率，连乘之得此路径分数。($b_{C}$：number of nodes)</p>
+</li>
+</ul>
+<script type="math/tex; mode=display">
+p_{b_{c}}=\operatorname{LSTM}\left(p_{b_{c-1}}, q_{b_{c-1}}\right)</script><script type="math/tex; mode=display">
+P\left(v_{b_c} \mid v_{<b_c}\right)=\frac{\exp \left(p_{b_c} W_{r} q_{b_c}\right)}{\sum_{n} \exp \left(p_{b_c} W_{r} q_{b_c}\right)}</script><ul>
+<li><p>问题三：增强此路径出现的概率会带给模型什么?</p>
+<p>针对每一实体对，都会有一条实例路径被视为路径重构的监督路径(supervision path):</p>
+<script type="math/tex; mode=display">
+\phi_{n}=\left\{\mathbf{v}_{b_1}, \mathbf{v}_{b_2}, \cdots, \mathbf{v}_{b_C}\right\}</script><p><strong>Reconstruction loss:</strong>（最大化有关系的路径分数，最小化没有关系的路径分数）</p>
+<script type="math/tex; mode=display">
+\operatorname{Loss}_{r}=-\frac{1}{\sum_{t=0}^{T} N_{t}} \sum_{t=1}^{T} \sum_{n=1}^{N_{t}}\left\{r_{n}^{t} \log \left(\mathcal{N}\left(\phi_{n}\right))\right)\right.\left.+\left(1-r_{n}^{t}\right) \log \left(1-\mathcal{N}\left(\phi_{n}\right))\right)\right\}</script><p>不清楚为什么作者在这里使用 $\prod_{c=1}^{C}\left(1-P_{b_{c}}\right)$ 替换了 <script type="math/tex">1-\mathcal{N}\left(\phi_{n}\right)</script>….</p>
+<p>新的$Loss_r$长这样子：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/02/164919-951163.png" alt=""></p>
+<p>最终$Loss$(分类+重构):</p>
+<script type="math/tex; mode=display">
+{Loss} ={Loss}_{c}+{Loss}_{r}</script></li>
+<li><p>推断时，加入reconstruction偏置项，计算关系对分数：</p>
+<script type="math/tex; mode=display">
+S(r)=\log (R(r))+\lambda \cdot \frac{1}{C} \sum_{b_{c}=1}^{b_{C}} \log \left(P_{b_{c}}\right)</script></li>
+</ul>
+<h3 id="Experiment"><a href="#Experiment" class="headerlink" title="Experiment"></a>Experiment</h3><div align="center">
+        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202102/28/171908-572688.png">  
+    </a>
+</div>
+
+<p>作者也做了一些消融与对比实验，结论如下：</p>
+<ul>
+<li><p>随着迭代步数（Iteration=Training step）的进行，classification / reconstrucation performance性能均有提升，24K迭代两者达到平衡。</p>
+</li>
+<li><p>Reconstruction 在训练和推断时都有用。</p>
+</li>
+<li><p>所定义的三种 meta path 都有效帮助模型capture了实体对间的路径依赖#见原文4.8#</p>
+</li>
+<li><p>path attention scores没太看懂是什么意思？留下问题；</p>
+<blockquote>
+<p>其他同学的理解：加 reconstruction 之后，GAT 里面的 attn score 更不平均了，说明能更有针对的 attn 到某些词了</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="Reflection"><a href="#Reflection" class="headerlink" title="Reflection"></a>Reflection</h3><ol>
+<li>这篇文章主要是在于人为固定了三种推理路径，真<strong>“人工”</strong>智能，规定了inference的方向，那么问题来了，之前的模型inference的机制出问题了吗？</li>
+<li>GAT那里只用了两层，那为啥还要dense连接呢？这个dense连接是为了什么呢？两层不至于信息丢失吧？</li>
+<li>reconstruction中的双线性以及LSTM隐藏状态与输出为什么都要用呢？节点出现概率计算公式的意义呢？</li>
+</ol>
+<h3 id="To-do"><a href="#To-do" class="headerlink" title="To do"></a>To do</h3><ul>
+<li><p>基于图的四部曲？？能总结出东西吗？</p>
+<p>encoder - graph - inference - classification</p>
+</li>
+<li><p>作者说到自己是从机器翻译得到的灵感？有几篇机器翻译的参考文献需要看下；</p>
+</li>
+</ul>
+<p>参考链接：<a target="_blank" rel="noopener" href="https://ivenwang.com/2021/01/23/docre-rec/">https://ivenwang.com/2021/01/23/docre-rec/</a></p>
+<p>问题二补充公式：</p>
+<script type="math/tex; mode=display">
+\mathcal{N}\left(\phi_{n}\right)=\prod_{c=1}^{C}\left(\mathcal{P}\left(\mathbf{v}_{b_{c}} \mid \mathbf{v}_{<b_{c}}\right)\right)</script>
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Chenhs</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://example.com/2021/02/26/1%20Document-Level-Relation-Extraction-with-Reconstruction/">http://example.com/2021/02/26/1%20Document-Level-Relation-Extraction-with-Reconstruction/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>😀😁😂🤣😃😄😅😆</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Relation-Extraction/"># Relation Extraction</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2021/04/21/Arxiv2021-Coarse-to-Fine-Entity-Representations-for-Document-level-Relation-Extraction/">Arxiv2021 | Coarse-to-Fine Entity Representations for Document-level Relation Extraction</a>
+            
+            
+        </section>
+
+
+    </article>
+</div>
+
+
+
+
+
+
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Chenhs | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a>
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<span class="site-uv">
+    总访客量:
+    <i class="busuanzi-value" id="busuanzi_value_site_uv"></i>
+</span>&nbsp;
+
+
+<span class="site-pv">
+    总访问量:
+    <i class="busuanzi-value" id="busuanzi_value_site_pv"></i>
+</span>
+
+</span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>

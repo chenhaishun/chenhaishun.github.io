@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Chenhs">
+
+
+
+
+
+<title>Chenhs</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        <!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+    });
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">思录</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/Hi">About</a>
+                
+                    <a class="menu-item" href="/Lists">Lists</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">思录</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/Hi">About</a>
+                
+                    <a class="menu-item" href="/Lists">Lists</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title"></h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Chenhs</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">七月 24, 2021&nbsp;&nbsp;16:07:32</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h3 id="Connecting-the-Dots-Document-level-Neural-Relation-Extraction-with-Edge-oriented-Graphs-论文阅读"><a href="#Connecting-the-Dots-Document-level-Neural-Relation-Extraction-with-Edge-oriented-Graphs-论文阅读" class="headerlink" title="Connecting the Dots: Document-level Neural Relation Extraction with Edge-oriented Graphs 论文阅读"></a>Connecting the Dots: Document-level Neural Relation Extraction with Edge-oriented Graphs 论文阅读</h3><hr>
+<h3 id="Background"><a href="#Background" class="headerlink" title="Background"></a>Background</h3><ul>
+<li><p>论文动机</p>
+<ul>
+<li><p>Entity relations can be better expressed through ==unique edge representations== formed as paths between nodes.(没有依据啊…) </p>
+<p>许多graph-based model 都是基于node, 文章发现 entity 之间的relation，可以通过节点之间的路径形成<strong>唯一的edge representation</strong></p>
+<blockquote>
+<p>entity之间的关系不唯一，为什么要规定representation要唯一呢？</p>
+<blockquote>
+<p>实验所使用的两个数据集其实都是每一个entity pair都只有一个relation;</p>
+</blockquote>
+</blockquote>
+</li>
+<li><p>每一个target entity的mentions对于entity之间的relation是非常重要的</p>
+</li>
+</ul>
+</li>
+<li><p>论文贡献</p>
+<ul>
+<li>本文提出了一种新颖的图神经模型（==面向边而非节点==），与现有的模型不同的是它专注于构造一种 unique 的节点和边，将信息encode到边表示（edge representation）而不是节点表示(node representation)；</li>
+<li>基于多实例学习（multi-instance learning，MIL）学习句子内和句子间的关系；</li>
+<li>模型<strong>==完全不依赖句法依赖工具==</strong>（也就不会带来因为工具的误差带来的噪音问题），可以有效编码文档级别的关系依赖；</li>
+<li>实验发现，inter-sentence 关系检测的结果对 intra-sentence 关系检测任务是有益的；</li>
+</ul>
+</li>
+<li><p>背景</p>
+<p>异质网络：根据不同的边来区分网络的类型；</p>
+<p>同质网络：虽节点不同，边的类型不同，但是把所有的节点当作同质关系进行处理，利用attention或者其他的方式自动进行区分。</p>
+</li>
+</ul>
+<hr>
+<h3 id="Model"><a href="#Model" class="headerlink" title="Model"></a>Model</h3><p>TASK definition: 给定标注好的document(entity与mentions)，目标是抽取出所有entity pair的relation。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202010/21/162902-579193.png" alt="image-20201021162901412"></p>
+<ul>
+<li><p><strong>Sentence Encoding Layer</strong></p>
+<p>Bi-LSTM: The  output of the encoder results in contextualized representations for each word of the input sentence.</p>
+</li>
+<li><p><strong>Graph Layer</strong></p>
+<p>The contextualized word representations from encoder are used to construct a document-level graph structure. 来自编码器的<strong>context</strong>表示被用来构建文档级图结构。</p>
+<ul>
+<li><p><strong>Node construction</strong>   (三种不同类型的节点构造)</p>
+<p>在EoG模型中，有三种node: mention node、entity node、sentence node。</p>
+<p>mention node:所有entity的mentions的集合。每一个mention node的representation是此mention的所有word embedding的平均；entity node:所有entity的集合，每一个entity node的representation是该entity所有的mentions的平均；sentence node:所有sentence的集合，每一个sentence node是该sentence中所有word embedding的平均。</p>
+<p>除此之外，我们为了区别不同类型的node，还给每一个node的representation上concat对应类型的node embedding $t$。</p>
+<ul>
+<li><p>mention node</p>
+<p>​                                          $\mathbf{n}_{m}=\left[\operatorname{avg}_{w_{i} \in m}\left(\mathbf{w}_{i}\right) ; \mathbf{t}_{m}\right]$</p>
+</li>
+<li><p>entity node</p>
+<p>​                                           $\mathbf{n}_{e}=\left[\operatorname{avg}_{w_{i} \in e}\left(\mathbf{w}_{i}\right) ; \mathbf{t}_{e}\right]$</p>
+</li>
+<li><p>sentence node</p>
+<p>​                                           $\mathbf{n}_{s}=\left[\operatorname{avg}_{w_{i} \in s}\left(\mathbf{w}_{i}\right) ; \mathbf{t}_{s}\right]$</p>
+</li>
+</ul>
+</li>
+<li><p><strong>Edge construction</strong> 不同的节点根据不同的性质生成不同种类的边</p>
+<p>上文的三种节点类型 边的类型有 <img src="https://www.zhihu.com/equation?tex=A_%7B3%7D%5E%7B3%7D" alt="[公式]"> 种 即 <strong>[MM, MS, ME, SS, ES, EE ]</strong> 六种, mention-mention(MM)、mention-entity(ME)、mention-sentence(MS)、entity-sentence(ES)、sentence-sentence(SS)。</p>
+<p>==Using heuristic rules （启发式规则）that stem from(源自) the natural associations between the elements of a document==(这个是怎么做到呢？)</p>
+<p>其中，The elements of a document： <strong>mentions, entities, and sentence.</strong></p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>Connections between nodes are based on Pre-defined document-level interactions:
+
+- **MM** :更好表达共指信息，还有mention之间的交互，除了基本信息之外还加入了 上下文信息 context 和 距离信息  (distance embedding associated with the distance between the two mentions)：
+
+  ​                                     $x_&#123;MM&#125;=[n_&#123;m_i&#125;;n_&#123;m_j&#125;;c_&#123;m_i,m_j&#125;;d_&#123;m_i,m_j&#125;]$
+
+  $x_&#123;MM&#125;$表示的是对于mention pair $(m_i,m_j)$的 MM edge,；
+
+  当$i=1,j=2$，有$x_&#123;MM&#125;=[n_&#123;m_1&#125;;n_&#123;m_2&#125;;c_&#123;m_1,m_2&#125;;d_&#123;m_1,m_2&#125;]$;
+
+  上下文信息：主要是应对类似it这种指代方法，否则不好推断此类节点的表达；其中 $a_i$表示sentence（mention所在的sentence？）的第$i$个word对此mention pair的重要性程度，也就是attention weight.
+
+​                                                 $\alpha_&#123;k,i&#125;=n^T_&#123;m_k&#125;w_i \\ a_&#123;k,i&#125;=\frac&#123;exp(\alpha_&#123;k,i&#125;)&#125;&#123;\sum_&#123;j\in[1,n],j\not\in m_k&#125;exp(\alpha_&#123;k,j&#125;)&#125; \\ a_i=(a_&#123;1,i&#125;+ a_&#123;2,i&#125;)/2 \\ c_&#123;m_1,m_2&#125;=H^Ta \\ k=\&#123;1,2\&#125;$
+
+- **MS:** 将mention与此mention所在的sentence node进行连接;
+ $$
+     \mathrm&#123;x&#125;_&#123;\mathrm&#123;MS&#125;&#125;=\left[\mathrm&#123;n&#125;_&#123;m&#125; ; \mathrm&#123;n&#125;_&#123;s&#125;\right]
+ $$
+</code></pre><ul>
+<li><p><strong>ME: </strong>连接所有的mention与其对应的entity;</p>
+<pre><code>   $$
+</code></pre><p>   \mathrm{x}_{\mathrm{ME}}=\left[\mathrm{n}_{m} ; \mathrm{n}_{e}\right]</p>
+<pre><code>   $$
+</code></pre><ul>
+<li><p><strong>SS:</strong> 将所有的sentence node进行连接，以获得non-local information，更好的表达在长距离上的依赖关系，相比mention，句子的数目少很多，==在整体上寻找相关性;==                  </p>
+<script type="math/tex; mode=display">
+\mathrm{x}_{\mathrm{SS}}=\left[\mathrm{n}_{s_i} ; \mathrm{n}_{s_j}; \mathrm{d}_{s_i,s_j}\right]</script><p> We connect all sentence nodes in the graph.</p>
+</li>
+<li><p><strong>ES:</strong> 如果一个sentence中至少存在一个entity的mention，那么我们将sentence node与entity node进行连接;        </p>
+<script type="math/tex; mode=display">
+\mathrm{x}_{\mathrm{MS}}=\left[\mathrm{n}_{e} ; \mathrm{n}_{s}\right]</script></li>
+</ul>
+</li>
+<li><p><strong>==EE:==</strong>无论我们建立什么类型的边节点关系 最终的目的都是寻找 EE 之间是否存在关系；<strong>异构的边应该统一到相同的表达中</strong>: 我们最终目的是<strong>提取出entity pair的relation</strong>，所以我们对所有的edge representation都做一个线性变换，从而让其维度一致</p>
+<script type="math/tex; mode=display">
+  \mathbf{e}_{z}^{(1)}=\mathbf{W}_{z} \mathbf{x}_{z}</script><pre><code>其中，$z \in[\mathrm&#123;MM&#125;, \mathrm&#123;MS&#125;, \mathrm&#123;ME&#125;, \mathrm&#123;SS&#125;, \mathrm&#123;ES&#125;]$, $\mathbf&#123;e&#125;_&#123;z&#125;^&#123;(1)&#125;$ is an edge representation of length 1;
+
+把不同边的类型根据不同的矩阵转换映射到相同的空间当中来进行后续的推导;
+</code></pre></li>
+<li><p><strong>Inference Layer</strong></p>
+<p>由于我们没有直接的<strong>EE edge</strong>，所以我们需要得到entity之间的唯一路径的表示，来产生EE edge的representation。这里使用了two-step inference mechanism来实现这一点。</p>
+<ul>
+<li><p>The first step: 利用中间节点 $k$ 在两个节点 $i$ 和 $j$ 之间产生一条路径，如下：</p>
+<p>​                                        $f\left(\mathbf{e}_{i k}^{(l)}, \mathbf{e}_{k j}^{(l)}\right)=\sigma\left(\mathbf{e}_{i k}^{(l)} \odot\left(\mathbf{W} \mathbf{e}_{k j}^{(l)}\right)\right)$</p>
+</li>
+<li><p>The second step: 将原始edge（如果存在的话）与新产生的edge进行聚合，如下：</p>
+<p>​                                    $e^{(2l)}_{ij}=\beta e^{(2l)}_{ij}+(1-\beta)\sum_{k\not=i,j}f(e^{(l)}_{ik},e^{(l)}_{kj})$</p>
+<p>重复上述两步N次，我们就可以得到比较充分混合的<strong>EE edge</strong>。通常情况下，$\beta$</p>
+<p>==实际上，这一步就是为了解决logical reasoning。==</p>
+</li>
+</ul>
+</li>
+<li><p><strong>Classification Layer</strong></p>
+<p>这里使用softmax进行分类，因为实验所使用的两个数据集其实都是每一个entity pair都只有一个relation。具体公式：</p>
+<p>​                                             $y=softmax(W_ce_{EE}+b_c)$</p>
+</li>
+</ul>
+<hr>
+<h3 id="Experiment"><a href="#Experiment" class="headerlink" title="Experiment"></a>Experiment</h3><ol>
+<li><p>数据集： CDR、GDA</p>
+</li>
+<li><p>实验结果：</p>
+<p>EoG(Full): 全连接；</p>
+<p>The graph node all connected each other, including the E node. </p>
+<p>EoG(NoInf): 取消推理模块；</p>
+<p>No inference model, where the iterative algorithm is ignored.</p>
+<p>EoG(Sen): 单句内训练，而非文档；</p>
+<p>Trained on sentence instead of document.</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/25/180207-158508.png" alt="image-20201125180204818"></p>
+</li>
+</ol>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/25/180227-678104.png" alt="image-20201125180226010"></p>
+<ol>
+<li>分析与讨论</li>
+</ol>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/27/161326-123293.png" alt="image-20201127161324841"></p>
+<p>$SS_{direct}$:只连接相接的sentence node（顺序连接）</p>
+<p>$SS_{direct}$ 只能捕获到局部的信息，收敛速度慢，同时也证明了句子间信息抽取的有效性；</p>
+<p>结论：$SS$ 仅需要更少的推理环节就可以达到收敛的效果；</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/27/161400-270289.png" alt="image-20201127161359668"></p>
+<p>当entity pair之间相差4句以上时，EoG(full)结果明显要好，这说明原始的EoG忽略了一些重要节点之间的交互信息，那么能不能让模型自动选择哪些节点要交互，哪些节点不要交互呢？(在LSR就是这么做的)除此之外，作者还对不同的component进行了消融实验。如下：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/27/161339-865985.png" alt="image-20201127161338237"></p>
+<p>去掉SS对结果影响巨大，这说明对于document-level RE，提取inter-sentence之间的交互信息是非常重要的，另外，MM似乎对结果影响最小，但是我认为MM对于entity pair的relation identification是非常重要的，只是EoG里面构造的方式不对，在之后的GAIN模型里面，可以看到MM对结果提升巨大，当然构建方式不一样。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Chenhs</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://example.com/2021/07/24/1%20Connecting%20the%20Dots%20Document-level%20Neural%20Relation%20Extraction%20with%20Edge-oriented%20Graphs/">http://example.com/2021/07/24/1%20Connecting%20the%20Dots%20Document-level%20Neural%20Relation%20Extraction%20with%20Edge-oriented%20Graphs/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>😀😁😂🤣😃😄😅😆</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2021/07/24/1%20Document-level%20RE/"></a>
+            
+            
+            <a class="next" rel="next" href="/2021/07/24/1%20Multi-view%20Inference%20for%20Relation%20Extraction%20with%20Uncertain%20Knowledge/"></a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+
+
+
+
+
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Chenhs | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a>
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<span class="site-uv">
+    总访客量:
+    <i class="busuanzi-value" id="busuanzi_value_site_uv"></i>
+</span>&nbsp;
+
+
+<span class="site-pv">
+    总访问量:
+    <i class="busuanzi-value" id="busuanzi_value_site_pv"></i>
+</span>
+
+</span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
