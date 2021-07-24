@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Chenhs">
+
+
+
+
+
+<title>ACL2019 | Inter-sentence Relation Extraction with Document-level Graph Convolutional Neural Network | Chenhs</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        <!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+    });
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">思录</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/Hi">About</a>
+                
+                    <a class="menu-item" href="/Lists">Lists</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">思录</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/Hi">About</a>
+                
+                    <a class="menu-item" href="/Lists">Lists</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">ACL2019 | Inter-sentence Relation Extraction with Document-level Graph Convolutional Neural Network</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Chenhs</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">四月 9, 2021&nbsp;&nbsp;17:09:22</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/categories/NLP/">NLP</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h4 id="Document-level-in-a-specific-domain"><a href="#Document-level-in-a-specific-domain" class="headerlink" title="## Document-level in a specific domain."></a>## Document-level in a specific domain.</h4><h3 id="Background"><a href="#Background" class="headerlink" title="Background"></a>Background</h3><p><strong>论文动机</strong></p>
+<ul>
+<li><p>文档级的关系抽取涉及到多种信息 (non-local/local/syntactic/semantic dependencies), 现有的方法不能充分地利用（exploit）these dependencies.</p>
+<ul>
+<li><p><strong>Local</strong> dependency &lt;=&gt; <strong>within</strong> sentence 句内依赖</p>
+<ul>
+<li>Dependency parsing 依赖解析</li>
+<li>Adequate for intra-sentence relations </li>
+</ul>
+</li>
+<li><p><strong>Non-Local</strong> dependencies&lt;=&gt;<strong>across</strong> sentences 句间依赖</p>
+<ul>
+<li>Co-reference 共指</li>
+<li>Discourse dependencies</li>
+<li>Required for inter-sentence relations</li>
+</ul>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/23/103517-317736.png" alt="image-20200723103516484"></p>
+</li>
+</ul>
+</li>
+<li><p>不同的sentence有不同的 dependency tree.</p>
+</li>
+</ul>
+<p><strong>论文贡献</strong></p>
+<ul>
+<li>构建==GCNN-based model 捕获 <strong>local</strong> 和 <strong>non-local dependencies。</strong>==<ul>
+<li>GCNN : a labelled edge Graph CNN</li>
+</ul>
+</li>
+<li>贡献了一个新的数据集</li>
+<li>Effectiveness of local and non-local dependencies on inter-sentence pairs</li>
+</ul>
+<hr>
+<h3 id="Model"><a href="#Model" class="headerlink" title="Model"></a>Model</h3><p><strong>IDEA</strong>: Utilise local and non-local dependencies in combination.</p>
+<ul>
+<li><p>Represent a textual snippet as a graph.</p>
+</li>
+<li><p>Words = nodes</p>
+<p>Edges =local,non-local dependencies </p>
+</li>
+<li><p>Incorporate ==GCNN for graph encoding==</p>
+</li>
+<li><p><strong><em>Multi-instance Learning</em></strong> for concept-level relation extraction.</p>
+</li>
+</ul>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/23/104327-882306.png" alt="image-20200723104325695"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/22/161950-485869.png" alt=""></p>
+<p>引申一个重要的定义：==Entity mentions==: we name the multiple occurrences of these entities in the document</p>
+<p>我们在文档 $t$ 上应用多实例学习来combine 所有的mention-level pairs,之后预测最终的关系类别(concept-level relation extraction)。</p>
+<p><strong>Input layer</strong></p>
+<p>对于每一个word  $i$ , 我们合并the word and position representations(relative positions to the first and second target entities  相对于第一个和第二个目标实体的相对位置 ):</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/22/164809-788884.png" alt="image-20200722164807892"></p>
+<p>如果一个entity有多个mention的话，那么就选择与当前word最近的mention来计算相对位置。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/23/104529-942641.png" alt="image-20200723104528014"></p>
+<p><strong>Graph Construction</strong></p>
+<p>图的构建由五大类特征构成，所以构建的图一共有5种边。由于边的类型不同，所以==GCNN构建的图属于异质网络图 。==</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/18/192632-68419.png" alt="image-20201118192631165"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/18/194405-842200.png" alt="image-20201118194403947"></p>
+<p><strong>local dependencies:</strong></p>
+<ol>
+<li><em>Syntactic dependency edge:</em> (clues for intra-sentence relations) 句子内的句法依赖边。使用句子内的依存语法树，每种依存关系作为一种类型的边;</li>
+</ol>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/18/193701-812155.png" alt="image-20201118193659693"></p>
+<ol>
+<li><em>Adjacent word edge</em>: 对于同一个sentence,为了保持句内单词间的序列信息，连接当前word相邻的单词;</li>
+</ol>
+<blockquote>
+<p>combine the next word and the previous word to the current word in order to encode some kind of sequential information into the model.</p>
+</blockquote>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/18/193712-758609.png" alt="image-20201118193711646"></p>
+<ol>
+<li><em>Self-node edge</em>: 自节点边，为了学习到自身的信息。</li>
+</ol>
+<p>在模型中包含有关单词的本身信息</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/18/193915-841376.png" alt="image-20201118193914246"></p>
+<p><strong>non-local dependencies:</strong></p>
+<ol>
+<li>Coreference edge:共指边,代表两个指称描述同一个实体</li>
+</ol>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/18/194154-716858.png" alt="image-20201118194153595"></p>
+<ol>
+<li>Adjacent sentence edge:将相邻句子的依存语法树==根节点连接==构成一种类型的边（the root of sentence）</li>
+</ol>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/18/194043-634953.png" alt="image-20201118194042388"></p>
+<p><strong>GCNN Layer</strong></p>
+<p>GCNN使用的GCN和普通的GCN有一些不同，它只交互一阶相邻节点的信息，并且有K个块，==每个块针对一种边进行卷积操作==，最后将各个块的结果累加。</p>
+<p>GCNN的整个处理过程其实可以看作是基于==5种关联类型构建了5个图==，分别进行图卷积操作，然后将5个图的结果累加。<strong>（怎么叠加呢）</strong>这样做的原因是不同的关联类型代表的含义是不同的，必须加以区分。（异质图？）GCNN最大的亮点就在这里，==通过分层巧妙的使用了多种关联关系。==</p>
+<blockquote>
+<p>这里使用的GCNN与普通的GCN不同，这里在aggregate node representation的时候，只使用了其邻域的信息，并且对于不同类型的edge，分别使用GCN(毕竟GCN只能用于同质图)，最终的结果是所有类型的graph的结果的加和。</p>
+</blockquote>
+<p>A labelled edge GCNN,keeping ==separate parameters for each edge type.==</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/18/195134-585351.png" alt="image-20201118195132991"></p>
+<p>$\mathbf{W}_{l(i, u)}^{k}$和$\mathbf{b}_{l(i, u)}^{k}$，其中$k$表示$k$-th block for ==edge type $l$,==  between nodes $i$ and $u$ .</p>
+<p>Stack $K$ GCNN blocks 目的：汇聚来自 distant neighbouring nodes的 information</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/23/111653-24507.png" alt="image-20200723111652376"></p>
+<p>In order to ==avoid over parameterization,==we tune the number of parameters and keep the top and keep most frequent edge types while merging all the remaining types as a single <strong>rare</strong> edge type.<strong>(有问题？？作者的意思就是五个不同的W吗？那最后x的信息怎么汇聚呢？五个不同的x呢呀)</strong></p>
+<p>A：应该是直接叠加</p>
+<h4 id="Tune-number-of-parameters-keeping-top-N-most-frequent-type-amp-merging-rare"><a href="#Tune-number-of-parameters-keeping-top-N-most-frequent-type-amp-merging-rare" class="headerlink" title="Tune number of parameters keeping top-N most frequent type &amp; merging rare"></a><strong>Tune number of parameters keeping top-N most frequent type &amp; merging rare</strong></h4><p><strong>MIL-based Relation Classification</strong></p>
+<p>前提概要：Each target entity can have multiple mentions in a document,we employ a multi-instance learning  (MIL)-based classification scheme to ==aggregate the predictions of all target mention pairs== using <strong>bi-affine pairwise scoring</strong>（为在一篇document中，每一个entity会有多个mention，我们希望能够去聚合target entity所有的mention，并通过bi-affine pairwise scoring对文章中出现的所以<strong>单词对</strong>进行打分，从而预测关系类别。bi-affine是一种self-attention编码器，可以一次计算出文档中所有mention之间的关系。。）</p>
+<p>首先，==每个word都分别映射到两个独立的 latent 空间。==</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/22/214457-756035.png" alt="image-20200722214455804"></p>
+<p>$\mathbf{W}^{(1)}$和$\mathbf{W}^{(0)}$是分别是2-layer FFNNs的参数。$\mathrm{x}_{i}^{\text {head}}, \mathrm{x}_{i}^{\text {tail}} \in \mathbb{R}^{d}$</p>
+<p>得到节点的表示后使用多示例学习，将上一步得到的结果映射为两个值，这一步的操作和下一步紧密相关，两个值分别用于计算节点是头实体和尾实体时节点间的关系概率。这里多示例学习的原理类似Transformer中的多头注意力，为了捕捉更多样的特征。以关系分类的角度这样做也很合理，==因为关系三元组是有向的，节点作为主体和客体时使用的特征也应该不同。==</p>
+<p>Aggregate mention pairs (<strong>x</strong>) —&gt;&gt;&gt;&gt;concept pair (<strong>e</strong>)，combine information form multiple mention level pairs into a single concept level pair </p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/22/214926-9923.png" alt="image-20200722214925471"></p>
+<p>$\mathbf{R} \in \mathbb{R}^{d \times r \times d}$ is a learned bi-affine tensor with $r$ ($r$ is the number of relation categories)</p>
+<hr>
+<h3 id="Experiment"><a href="#Experiment" class="headerlink" title="Experiment"></a>Experiment</h3><p>数据集：CDR、CHR (这种两个biochemistry领域的document-level 关系抽取数据集)</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/23/113526-610653.png" alt="image-20200723113525448"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/23/113549-744584.png" alt="image-20200723113548128"></p>
+<p><strong>CDR&amp;CHR</strong></p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/22/215826-142652.png" alt="image-20200722215824962"></p>
+<p>​                                                             Statistics of the CDR and CHR datasets.</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/22/215920-377622.png" alt="image-20200722215920037"></p>
+<p>​                            Performance on the CDR and CHR test sets in comparison </p>
+<p><strong>What is the optimal number of edge types ?</strong></p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/23/113934-615874.png" alt="image-20200723113933667"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/23/114100-201730.png" alt="image-20200723114059594"></p>
+<p>思考：</p>
+<p>GCNN 中规中矩，没有特别出色的地方：</p>
+<p>确确实实构建了异质图，但是却没有考虑到不同类型edge的作用；</p>
+<p>logical reasoning几乎没有单独拿来讨论处理，纯靠GCNN（邻域聚合能推理个毛线？）；</p>
+<p>所有类型edge在构建的时候需要其他工具，错误肯定存在的；</p>
+<p>对于word representation的表示没考虑到上下文，表示不够；</p>
+<p>卷积神经网络（Convolutional Neural Networks, CNN）是一种前馈神经网络，其由一个或多个卷积层和顶端的全连接层组成，同时包括关联权重和池化层等。其中最重要的构建模块为卷积层，相比较与全连接层，其学到的是输入图像局部模式。具体来说，卷积神经网络经过训练之后学习到的是在输入图像的二维小窗口中发现的模式，这些窗口可以表示为一幅小图像，也被称为感受野。值得注意的是，卷积层的神经元不会连接到输入图像中的每个像素，而只与其感受野内的像素相连接，这样的设计架构使得网络在当前隐藏层将前置隐藏层中学到的低阶特征组装为比较高阶的特征，这种强大的网络结构可以检测到视觉区域内的所有复杂模式。同时，相比较与全连接神经网络，由于其在给定卷积核中共享相同的参数，即在局部区域上的相同的线性变换应用到输入的所有区域上，因此大大减少了模型中的参数数量。而对于全连接神经网络来说，当它学会了在一个位置识别模式，它就只能在那个特定位置识别它。</p>
+<p>除了卷积层之外，卷积神经网络中的池化层主要是对输入图像进行下采样，以便减少计算量、内存使用量和参数数量。就像在卷进层中一样，池化层中的每个神经元都连接到位于一个小窗口中的有限数量的神经元输出。但是，池化层并没有权重，其主要是使用聚合函数来聚合输入，以达到下采样的目的。简而言之，池化层一方面减少了需要处理的元素个数，另一方面让连续的卷积层的观察窗口覆盖更大比例的原始输入，进而引入空间过滤器的层次结构，学习到更加复杂和抽象的视觉概念。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Chenhs</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://example.com/2021/04/09/ACL2019%20Inter-sentence%20Relation%20Extraction%20with%20Document-level%20Graph%20Convolutional%20Neural%20Network/">http://example.com/2021/04/09/ACL2019%20Inter-sentence%20Relation%20Extraction%20with%20Document-level%20Graph%20Convolutional%20Neural%20Network/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>😀😁😂🤣😃😄😅😆</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/document-level-RE/"># document-level RE</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2021/04/21/Arxiv2021-Coarse-to-Fine-Entity-Representations-for-Document-level-Relation-Extraction/">Arxiv2021 | Coarse-to-Fine Entity Representations for Document-level Relation Extraction</a>
+            
+            
+            <a class="next" rel="next" href="/2021/03/24/AAAI2021%20Multi-view%20Inference%20for%20Relation%20Extraction%20with%20Uncertain%20Knowledge/">AAAI2021 | Multi-view Inference for Relation Extraction with Uncertain Knowledge</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+
+
+
+
+
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Chenhs | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a>
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<span class="site-uv">
+    总访客量:
+    <i class="busuanzi-value" id="busuanzi_value_site_uv"></i>
+</span>&nbsp;
+
+
+<span class="site-pv">
+    总访问量:
+    <i class="busuanzi-value" id="busuanzi_value_site_pv"></i>
+</span>
+
+</span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
