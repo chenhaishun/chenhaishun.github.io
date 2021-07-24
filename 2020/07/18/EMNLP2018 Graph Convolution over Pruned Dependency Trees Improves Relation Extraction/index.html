@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Chenhs">
+
+
+
+
+
+<title>EMNLP2018 | Graph Convolution over Pruned Dependency Trees Improves Relation Extraction | Chenhs</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        <!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+    });
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">思录</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/Hi">About</a>
+                
+                    <a class="menu-item" href="/Lists">Lists</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">思录</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/Hi">About</a>
+                
+                    <a class="menu-item" href="/Lists">Lists</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">EMNLP2018 | Graph Convolution over Pruned Dependency Trees Improves Relation Extraction</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Chenhs</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">七月 18, 2020&nbsp;&nbsp;17:09:22</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/categories/NLP/">NLP</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="Background"><a href="#Background" class="headerlink" title="Background"></a>Background</h2><ul>
+<li><p>论文动机</p>
+<ol>
+<li><p>现有基于依存树的方法往往在剪枝的过程中忽略重要信息</p>
+</li>
+<li><p>计算效率低下，难以在不同的树结构上并行化。</p>
+</li>
+</ol>
+</li>
+<li><p>论文贡献</p>
+<ol>
+<li>提出使用GCN去做关系抽取，可以有效==在不同树结构上==对信息进行汇聚。</li>
+<li>新的剪枝策略(path-cebtric pruning)，==最大程度地忽略无关信息提升模型鲁棒性。==</li>
+<li>通过实验数据分析发现==基于依存的模型与序列模型有很大的互补优势。==</li>
+</ol>
+</li>
+</ul>
+<hr>
+<h2 id="Model"><a href="#Model" class="headerlink" title="Model"></a>Model</h2><ul>
+<li><h3 id="GCN在模型中的应用细节"><a href="#GCN在模型中的应用细节" class="headerlink" title="GCN在模型中的应用细节"></a>GCN在模型中的应用细节</h3><p><strong>Graph Convolutional Networks over Dependency Trees</strong></p>
+<p>假定一个具有n节点的图结构的转移矩阵$A_{ij}$,若$A_{ij}=1$代表节点$i$,$j$之间有依存边存在，GCN网络第$L$层的第$i$个节点输出向量如下式所示：</p>
+<p>​                                        <script type="math/tex">h_{i}^{(l)}=\sigma\left(\sum_{j=1}^{n} A_{i j} W^{(l)} h_{j}^{(l-1)}+b^{(l)}\right)</script></p>
+<p>如果直接应用上面的公式会存在一些问题：</p>
+<ul>
+<li>会导致不同的节点表示大相径庭；</li>
+<li>使得最终的句子表示会偏向 出(入)度 大的节点；</li>
+</ul>
+<p><strong>怎么解决？</strong></p>
+<ul>
+<li><p>进行归一化(normalization)</p>
+</li>
+<li><p>增加自环（self-loops）</p>
+<p>​                                   $h_{i}^{(l)}=\sigma\left(\sum_{j=1}^{n} \tilde{A}_{i j} W^{(l)} h_{j}^{(l-1)} / d_{i}+b^{(l)}\right)$</p>
+<p>其中$d_{i}=\sum_{j=1}^{n} \tilde{A}_{i j}$，$\tilde{\mathbf{A}}=\mathbf{A}+\mathbf{I}$</p>
+<p>token之间的信息传播是并行发生的，并且运行时间不依赖于依赖树的深度。</p>
+</li>
+</ul>
+<p><strong>关于边的设定</strong></p>
+<ul>
+<li>Note that the GCN model presented above uses <strong>the same parameters for all edges</strong> in the dependency graph. <strong>（图模型中的所有边都使用相同的参数）</strong><ul>
+<li>设置了相应的对照实验<ul>
+<li>对自顶向下（top-down）、自下而上(bottom-up)和自循环(self-loop)的三种形式的边使用不同的转移矩阵W；</li>
+<li>添加特定的参数用于控制边的连通，反而并没有使得模型的表现有所提升。</li>
+</ul>
+</li>
+<li>以上原因在于<ul>
+<li>增加这一部分信息会导致overfitting</li>
+<li>the presented GCN model is usually already able to capture dependency edge<br>patterns that are informative for classifying relations <strong>(GCN太powerful了)</strong></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><h3 id="模型流程总览"><a href="#模型流程总览" class="headerlink" title="模型流程总览"></a>模型流程总览</h3><p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/14/114157-110009.png" alt="image-20200714114157299"></p>
+<ul>
+<li><p>模型输入</p>
+<p>(1) 假定句子为$\mathcal{X}=\left[x_{1}, \ldots, x_{n}\right]$</p>
+<p>(2) 设置两个entities的span分别为$\mathcal{X} s=\left[x_{s 1}, \ldots, x_{s 2}\right], \mathcal{X}_{O}=\left[x_{o 1}, \ldots, x_{o 2}\right]$</p>
+<p>(3) 将这个句子输入GCN，输出$h^{(L)}=\operatorname{GCN}\left(h^{(0)}\right)$，每行对应一个词汇的embedding。</p>
+<ul>
+<li>之后再把句子的向量也经过max pooling，$h_{\text {sent }}=f(\mathbf{h}^{(L)})=f(\mathbf{G} \mathbf{C} \mathbf{N}(\mathbf{h}^{(0)}))$</li>
+</ul>
+<p>(4) 利用两个 entities 中每个单词的 embeddings 求 entities 的 embedding, 利用的方法是 max pooling , 比如我们对第一个entity:</p>
+<p>​                                                        <script type="math/tex">h_{s}=f\left(\mathbf{h}_{s_{1}: s_{2}}^{(L)}\right)</script></p>
+<p>​                                                        $f: \mathbb{R}^{d \times n} \rightarrow \mathbb{R}^{d}$</p>
+<ul>
+<li><p>再通过一个分类器</p>
+<p>​                                   $h_{\text {final }}=\operatorname{FFNN}\left(\left[h_{\text {sent }} ; h_{s} ; h_{o}\right]\right)$</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><h3 id="Contextualized-GCN"><a href="#Contextualized-GCN" class="headerlink" title="Contextualized GCN"></a>Contextualized GCN</h3><ul>
+<li><p>存在的问题 </p>
+<ol>
+<li>现有的word vectors不包含上下文信息；</li>
+<li>GCN抽取重要信息是基于一个正确的依赖解析树。</li>
+</ol>
+</li>
+<li><p>怎么解决</p>
+<ol>
+<li>将经过双向LSTM网络结构的word vector作为模型的输入$h_{0}$。（此Bi-LSTM与上述模型一同训练）</li>
+<li>Graph kernel-based models旨在利用依存树的局部信息来进行关系分类，除此之外，本文的模型还包含关键的路径之外的信息。同时相比较于一般的 Tree-LSTM 训练速度提升了上百倍。<strong>（为什么？？？）</strong></li>
+</ol>
+</li>
+</ul>
+</li>
+<li><h3 id="Incorporating-Off-path-Information-with-Path-centric-Pruning"><a href="#Incorporating-Off-path-Information-with-Path-centric-Pruning" class="headerlink" title="Incorporating Off-path Information with Path-centric Pruning"></a>Incorporating Off-path Information with Path-centric Pruning</h3><ul>
+<li><p><strong>背景</strong></p>
+<ul>
+<li><p>何为LAC tree？</p>
+<p><strong>依存树提供了可以在关系抽取中利用的丰富结构</strong>，但是与关系相关的大多数信息通常包含在以两个实体的最近共同祖先为根的子树内,如下图所示。这个子树为 lowest common ancestor tree (LCA subtree)</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/14/160205-327658.png" alt="image-20200714160203468"></p>
+<p>例如上图中的两个实体分别是 water 和 region , 这两个节点的公共父节点是 poured。所以上述依存树的 LCA subtree 就是整个树。</p>
+</li>
+</ul>
+</li>
+<li><h4 id="SDP与Path-centric-Pruning"><a href="#SDP与Path-centric-Pruning" class="headerlink" title="SDP与Path-centric Pruning"></a><strong>SDP与Path-centric Pruning</strong></h4><p>一个完整的树对于关系抽取来说不是必须的, 反而过多的path以及依存关系会影响最后的结果, 因此需要除去多余的path。下图的红色部分表示最短路径。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/14/160205-327658.png" alt="image-20200714160203468"></p>
+<p>这里引入一个概念 K, 是指, 距离最短路径距离为 K 的图. 例如:</p>
+<ul>
+<li>K=0, 也就是最短路径本身。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>K=1, 也就是最短路径上的点, 加上距离最短路径为K的点的全部点的子图。</p>
+<ul>
+<li><p>K=无穷, 是指 LCA subtree 全部。</p>
+<p>文章中测试最佳 K, 答案是 K=1 是最佳答案。当K = 1时，所有三个模型的性能均达到峰值，胜过它们各自基于依赖路径的对应模型（K =  0）。==即合并偏离路径的信息对于关系提取至关重要。同时发现，当整个依赖树==存在时，所有三个模型都有不同程度的下降，这表==包括额外的信息会损害性能。==如下图所示：<br><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/14/162124-991343.png" alt="image-20200714162122449"></p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="Experiments"><a href="#Experiments" class="headerlink" title="Experiments"></a>Experiments</h2><ul>
+<li><h3 id="对比模型设置"><a href="#对比模型设置" class="headerlink" title="对比模型设置"></a><strong>对比模型设置</strong></h3><p>==基于依赖的模型==。</p>
+<p>在我们的主要实验中，我们将比较三种基于依赖的模型。</p>
+<p>（1）逻辑回归<strong>（LR）</strong>分类器，基于依赖的特征与其他词汇特征相结合。</p>
+<p>（2）<strong>SDP-LSTM:</strong>它在依存树中的主语和宾语之间的最短路径上应用神经序列模型。</p>
+<p>（3）<strong>Tree-LSTM</strong>：它是一个递归模型，将LSTM推广到了任意的树结构。我们实验采用Tree-LSTM的child-sum变体，并将其应用于依存树（或其一部分）。</p>
+<p>==神经序列模型。==</p>
+<p>​        作者团队曾提出了一种具有竞争力的序列模型，该模型在LSTM的输出上加入了位置感知注意机制（PA-LSTM），并且表明它在很大程度上优于几个CNN和基于依赖的模型。</p>
+</li>
+<li><h3 id="实验数据集"><a href="#实验数据集" class="headerlink" title="实验数据集"></a><strong>实验数据集</strong></h3><h4 id="1）TACRED"><a href="#1）TACRED" class="headerlink" title="1）TACRED"></a>1）<strong>TACRED</strong></h4><p>​        它包含41种关系类型和一种特殊的的类型，即“无关系”，当实体对的关系不存在于41种给定的关系类型之内时，则会被标记为“无关系”。TACRED中的实体对是被标注好的，主语分为个人和组织，宾语被分为16种细粒度类型(例如日期和位置)。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/14/163513-339675.png" alt="image-20200714163511972"></p>
+<p>​        我们观察到我们的GCN模型的F1值，比所有基于依赖的模型，高出了至少1.6。通过结合上下文的词语表示，C-GCN模型的F1值进一步比已经很强的PA-LSTM模型高出1.3，实现了新的最佳表现。</p>
+<p>将C-GCN模型与GCN模型进行比较，我们发现表现的提升主要来自于召回率的提升，可能是由于C-GCN<strong>通过捕获局部信息来使得模型面对解析错误时更加鲁棒（the C-GCN is more robust to parse errors by capturing local word patterns）</strong></p>
+<p>​        同时我们发现PA-LSTM与GCN模型具有互补优势。我们尝试了一种简单的插值策略来组合这些模型。    </p>
+<p>​                                                $P(r \mid x)=\alpha \cdot P_{G}(r \mid x)+(1-\alpha) \cdot P_{S}(r \mid x)$</p>
+<p>​        其中在验证集上选择α∈[0,1]，并将α设置为0.6。GCN和PA-LSTM之间的这种简单插值获得了67.1的F1得分，比每个独立的模型高出了至少2.0。C-GCN和PA-LSTM之间的插值进一步将结果改善为68.2。</p>
+<h4 id="2）-SemEval-2010-Task-8："><a href="#2）-SemEval-2010-Task-8：" class="headerlink" title="2） SemEval 2010 Task 8："></a>2） <strong>SemEval 2010 Task 8：</strong></h4><ul>
+<li><p>SemEval数据集在最近的工作中被广泛使用，但其规模要小得多，其中包括8000个训练样本和2717个测试样本。它在未被标注的实体对上包含了19个关系类别：9个<strong>有向</strong>关系和一个特殊的Other类。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/14/163534-530153.png" alt="image-20200714163533387"></p>
+<p>​        为了研究我们提出的模型的泛化能力，作者进一步在SemEval测试集上训练和评估了C-GCN模型，发现在传统的实验评估中，我们的C-GCN模型在SemEval数据集上优于所有现有的基于依赖的神经模型。也优于先前基于最短依赖路径的模型（SDP-LSTM）。</p>
+<p>​        在==替换掉实体的实验（<em>mask-m</em>）==中，C-GCN模型也大幅优于PA-LSTM，这表明即使没有看到实体，我们的模型也具有泛化能力。</p>
+</li>
+</ul>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/14/195344-687734.png" alt="image-20200714195344049"></p>
+<p><strong>NOTE：</strong>PA-LSTM 是一个 sequential 模型, 没有利用到依存信息</p>
+<ul>
+<li><p>看前半段 : 说明与利用依存信息的方法相比,==在短距离的关系上, 序列模型效果也很好==</p>
+</li>
+<li><p>看后半段 : 说明在==长的距离上, 利用了GCN的模型更好.== 但是由于 GCN 本身无法处理长距离, 因此加上一层LSTM会更好.</p>
+<p><strong>LSTMs系列更容易处理local feature, GCNs系列更容易处理entities farther apart.</strong></p>
+</li>
+</ul>
+<h4 id="3-SemEval数据集中的Entity-Bias"><a href="#3-SemEval数据集中的Entity-Bias" class="headerlink" title="3) SemEval数据集中的Entity Bias"></a>3) SemEval数据集中的Entity Bias</h4><p>作者发现数据集中句子中的实体与关系标签之间存在很高的相关性。作者采用PA-LSTM模型来分析这一现象。首先将SemEval训练集和验证集合中的每一个句子简化为“主语和宾语”（<strong>subject and object）</strong>。实验发现，如果使用GloVe来初始化单词向量，经过训练的PA-LSTM模型可以在验证集上实现65.1的F1，即使不使用GloVe来初始化词向量，模型也能在验证集上取得47.9的F1。</p>
+<p>为了在更真实的环境下进一步评估该模型，我们参考了TACRED(替换掉了实体)中的工作，训练了一个带有原始SemEval验证集(未替换实体)的模型，以及一个在验证集上替换了实体的模型。</p>
+<p>当未替换实体的模型在原始SemEval验证集上实现了83.6的F1时，如果我们用一个特殊的<UNK>标记替换验证集上的实体以模拟未见过的实体的情况，则F1将急剧下降到62.4。</p>
+<p>相比之下，替换实体使模型不受未见过的实体（unseen entities）的影响，并且在验证集上实现了74.7的F1。<strong>(有点像 BERT中的mask 操作？)</strong></p>
+<p>这表明，在没有替换实体的情况下训练的模型很难推广到具有未见过的实体的新样本。</p>
+</li>
+</ul>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Chenhs</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://example.com/2020/07/18/EMNLP2018%20Graph%20Convolution%20over%20Pruned%20Dependency%20Trees%20Improves%20Relation%20Extraction/">http://example.com/2020/07/18/EMNLP2018%20Graph%20Convolution%20over%20Pruned%20Dependency%20Trees%20Improves%20Relation%20Extraction/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>😀😁😂🤣😃😄😅😆</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Sentence-Level-RE/"># Sentence Level RE</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/07/27/ACL2019%20Graph%20Neural%20Networks%20with%20Generated%20Parameters%20for%20Relation%20Extraction/">ACL2019 | Graph Neural Networks with Generated Parameters for Relation Extraction</a>
+            
+            
+            <a class="next" rel="next" href="/2020/04/13/ACL2019%20%20Connecting%20the%20Dots%20Document-level%20Neural%20Relation%20Extraction%20with%20Edge-oriented%20Graphs/">ACL2019 | Connecting the Dots Document-level Neural Relation Extraction with Edge-oriented Graphs</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+
+
+
+
+
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Chenhs | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a>
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<span class="site-uv">
+    总访客量:
+    <i class="busuanzi-value" id="busuanzi_value_site_uv"></i>
+</span>&nbsp;
+
+
+<span class="site-pv">
+    总访问量:
+    <i class="busuanzi-value" id="busuanzi_value_site_pv"></i>
+</span>
+
+</span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
