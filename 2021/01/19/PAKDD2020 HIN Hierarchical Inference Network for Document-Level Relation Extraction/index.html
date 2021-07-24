@@ -12,7 +12,7 @@
 
 
 
-<title>Chenhs</title>
+<title>PAKDD2020 | HIN:Hierarchical Inference Network for Document-Level Relation Extraction | Chenhs</title>
 
 
 
@@ -214,7 +214,7 @@
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title"></h1>
+            <h1 class="post-title">PAKDD2020 | HIN:Hierarchical Inference Network for Document-Level Relation Extraction</h1>
             
                 <div class="post-meta">
                     
@@ -223,117 +223,82 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">七月 24, 2021&nbsp;&nbsp;16:07:32</a>
+                        Date: <a href="#">一月 19, 2021&nbsp;&nbsp;17:09:22</a>
                         </span>
                     
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/categories/NLP/">NLP</a>
+                            
+                        </span>
                     
                 </div>
             
         </header>
 
         <div class="post-content">
-            <h3 id="Snapshot"><a href="#Snapshot" class="headerlink" title="Snapshot"></a>Snapshot</h3><ul>
-<li><p>论文来源：arXiv-2020.08 #JD AI Research#</p>
-</li>
-<li><p>面向任务：DocRE</p>
-</li>
-<li><p>方法分类：BERT-based</p>
-</li>
-<li><p>论文动机：</p>
-<p>众所周知，文档内实体对关系的判断主要是依据与当前实体最相关的support/evidence sentence。根据这一动机设计一种可以引导预训练模型集中focus文档中最相关的位置，而往常PLMs在处理文档时需要同时encode关于所有实体对相关的信息。因此，attention values over all token are more uniform。同时suporting/evidence sentences can be used as an auxiliary task for explainable RE.</p>
-</li>
-<li><p>指标分数：Ign F1:60.3 ; F1:62.5(RoBERTa-large)</p>
-<blockquote>
-<p>并未提及BERT-based的test结果 。</p>
-</blockquote>
-</li>
-<li><p>快看速评：论文动机很简单，方法也比较优雅。但是对方法的合理性（比如在头部拼接实体是否真正可以起到引导预训练模型的fine-tuning有待考究），另外整个模型的计算复杂度肯定不低吧，自称SOTA，其实效果也勉勉强强，实验的分析比较单薄，这就是工业界论文的风格？</p>
-</li>
-<li><p>代码复现：待公开</p>
-<div align="center">
-        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/11/150353-687394.png">  
-    </a>
-</div>
-
-</li>
-</ul>
-<h3 id="Method"><a href="#Method" class="headerlink" title="Method"></a>Method</h3><div align="center">
-        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/11/152958-308751.png">  
-    </a>
-</div>
-
-<h4 id="实体引导下的关系抽取"><a href="#实体引导下的关系抽取" class="headerlink" title="实体引导下的关系抽取"></a>实体引导下的关系抽取</h4><ol>
-<li><p>要引导，怎么引导PLM关注当前实体呢？</p>
-<p>A：生成Entity-guided Input Sequences，以此引导PLM towards the entities.(<u>合理性存疑</u>)</p>
-<p>具体做法是在document前concatenate the first mention of a single entity.</p>
-<p>表示为“[CLS]”+<em>H</em>+”[SEP]”+<em>D</em>+”[SEP]”, 当模型存在有$N_e$个实体，那么就会有$N_e$个新的输入。</p>
-</li>
-<li><p>文档首部合并实体之后经BERT得到Output后，下一步关系抽取怎么做？</p>
-<p>head entity, tail entity与关系权重 $W_{i}$（learnable）相乘做线性变换：</p>
-<script type="math/tex; mode=display">
-\hat{y}_{i k}=\delta\left(\boldsymbol{h}^{T} \boldsymbol{W}_{i} \boldsymbol{t}_{k}+b_{i}\right)</script><p>此时的Loss定义为：</p>
-<blockquote>
-<p>到这一步，只能算是无脑BERT；</p>
-</blockquote>
-<script type="math/tex; mode=display">
-\begin{aligned}
-L_{R E} &=-\frac{1}{N_{r}} \frac{1}{N_{e}-1} \sum_{k=1}^{N_{e}-1} \sum_{i=1}^{N_{r}}\left(y_{i k} \log \left(\hat{y}_{i k}\right)\right.
-\left.+\left(1-y_{i k}\right) \log \left(1-\hat{y}_{i k}\right)\right)
-\end{aligned}</script></li>
-</ol>
-<h4 id="支撑句引导下的关系抽取"><a href="#支撑句引导下的关系抽取" class="headerlink" title="支撑句引导下的关系抽取"></a>支撑句引导下的关系抽取</h4><h5 id="支撑句预测："><a href="#支撑句预测：" class="headerlink" title="支撑句预测："></a>支撑句预测：</h5><p>预测一给定句子是否为一给定关系的支撑句。即sentence $j$ 是否为关系$r_i$的支撑句的分数：</p>
-<blockquote>
-<p>$k$ 表示尾实体的序号吗？如果不是，那尾部实体的信息从何体现呢？？如果是，哪里有尾实体的信息呢？奇奇怪怪的$k$</p>
-</blockquote>
-<script type="math/tex; mode=display">
-\begin{array}{l}
-\boldsymbol{f}_{j k}^{i}=\boldsymbol{s}_{j} \boldsymbol{W}_{i}^{r} \boldsymbol{r}_{i}+b_{i}^{r} \\
-\hat{\boldsymbol{y}}_{j k}^{i}=\delta\left(\boldsymbol{f}_{j k}^{i} \boldsymbol{W}_{o}^{r}+b_{o}^{r}\right) 公式（3）
-\end{array}</script><p>此时的Loss定义为：（$N_t$表示了什么？）</p>
-<script type="math/tex; mode=display">
-\begin{aligned}
-L_{E v i} &=-\frac{1}{N_{t}} \frac{1}{N_{s}} \sum_{k=1}^{N_{t}} \sum_{j=1}^{N_{s}}\left(y_{j k}^{i} \log \left(\hat{\boldsymbol{y}}_{j k}^{i}\right)\right.\left.+\left(1-y_{j k}^{i}\right) \log \left(1-\hat{\boldsymbol{y}}_{j k}^{i}\right)\right)
-\end{aligned}</script><h5 id="支撑句下的BERT微调："><a href="#支撑句下的BERT微调：" class="headerlink" title="支撑句下的BERT微调："></a>支撑句下的BERT微调：</h5><p>依据BERT内部的 attention probabilities 来给予支撑句更高的attention value.</p>
-<p>针对每一实体对($head$, $tail$),取BERT最后输出的$l$层中，由此计算出文档中的sentence们在当前实体对下的“所需要关注度” —$a_{sk}$（一顿操作并没有看懂，特别是维度那块看起来很奇怪…）</p>
-<blockquote>
-<p>下面的公式可以看作是对公式（3）的“微操”，为预测的支撑句加上权重。</p>
-</blockquote>
-<script type="math/tex; mode=display">
-\hat{\boldsymbol{y}}_{k}^{i a}=\delta\left(\boldsymbol{a}_{s k} \boldsymbol{W}_{i}^{a} \boldsymbol{f}_{k}^{i}+b_{i}^{a}\right)</script><p>此时Loss如下：</p>
-<script type="math/tex; mode=display">
-\begin{aligned}
-L_{E v i}^{a} &=-\frac{1}{N_{t}} \frac{1}{N_{s}} \sum_{k=1}^{N_{t}} \sum_{j=1}^{N_{s}}\left(y_{j k}^{i a} \log \left(\hat{\boldsymbol{y}}_{j k}^{i a}\right)\right.\left.+\left(1-y_{j k}^{i a}\right) \log \left(1-\hat{\boldsymbol{y}}_{j k}^{i a}\right)\right)
-\end{aligned}</script><h4 id="关系抽取与支撑句预测联合训练"><a href="#关系抽取与支撑句预测联合训练" class="headerlink" title="关系抽取与支撑句预测联合训练"></a>关系抽取与支撑句预测联合训练</h4><script type="math/tex; mode=display">
-\operatorname{Loss}=L_{R E}+\lambda_{1} * L_{E v i}^{a}</script><blockquote>
-<p>以上全部为自己的个人理解，文章出发点不错，但是很多地方都描述不清楚…!!</p>
-</blockquote>
-<h3 id="Experiment"><a href="#Experiment" class="headerlink" title="Experiment"></a>Experiment</h3><p>用了体量更大的模型RoBERTa-large在线test中取得不错的效果，换作BERT之后只在validation set上比较，这不是耍流氓吗？</p>
-<div align="center">
-        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/12/230446-597435.png">  
-    </a>
-</div>
-
+            <p>​                               <strong>非 graph-based method, 结果也很一般，”思路新 方法旧”</strong></p>
+<h2 id="Background"><a href="#Background" class="headerlink" title="Background"></a>Background</h2><p>HIN模型还是蛮好懂的，它并不是从基于graph的方式上来解决document-level RE的，而是通过从entity-level、sentence-level、document-level这样层级的方式来做（文中称之为==多粒度==），有点类似于文本分类模型HAN。</p>
+<p>解决了两个问题：</p>
 <ul>
-<li><p>直到看到消融那里发现作者说联合训练效果是最差的？所以这篇文章到底说明了什么？还是我理解错了？</p>
-<div align="center">
-        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/12/233822-176160.png">  
-    </a>
-</div>
-</li>
-<li><p>使用BERT最后三层效果最好，见TODO第二条；</p>
-</li>
-<li><p>attention可视化比较有意思，看了TODO第二条再反过来看吧。</p>
-<p>结论：除了关注头尾实体之外，也开始关注于前后实体相关的短语，支撑句等区域。另外，attention value的scale也比baseline更大，更宽泛。。。</p>
-</li>
+<li>如何获得不同粒度的推理信息?</li>
+<li>如何汇总这些不同的粒度推断信息并做出最终预测?</li>
 </ul>
-<h3 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h3><ul>
-<li><p>新思路：先验（BERT）+推理（Graph）</p>
-<p>相比较于精心构图，设计节点连接方式，BERT-based的方法确实稍微优雅些，应该在可解释性方面多投入一些精力，发挥出bert的全部潜力</p>
+<hr>
+<h2 id="Model"><a href="#Model" class="headerlink" title="Model"></a>Model</h2><p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/19/110349-388751.png" alt="image-20201119110348008"></p>
+<p>HIN模型分为四部分：<strong>input layer、entity-level inference module、hierarchical document-level inference module、prediction layer。</strong></p>
 <ul>
-<li>BERT内部attention ：What Does BERT Look At? An Analysis of BERT’s Attention</li>
-</ul>
+<li><p><strong>Input layer：</strong>原始的输入有三部分：</p>
+<ul>
+<li><p><strong>word embedding, entity type embedding, coreference embedding。</strong></p>
+<p>其中，word embedding就是每一个token的word embedding，其维度：$d_w$；entity type embedding指的是将entity 的type信息转换为一个dense vector，其维度是：$d_t$；coreference embedding指的是同一个entity的不同的mention被分配同一个entity id，其维度：$d_c$。这一层的输出为三者的concat。</p>
 </li>
 </ul>
+</li>
+<li><p><strong>Entity-level inference module：</strong>(范围是document,类似于global-local中的global rep.)</p>
+<p>首先使用BILSTM来对document进行编码，即：</p>
+<p>​                                               $h_i=BILSTM(w_i),i\in[1,n]$</p>
+<p>$n$ 表示一个document中所有的token数目；每一个mention的rep是其每一个word的 avg，每一个entity是其所有的mention rep的avg，即：</p>
+<p>​                                             $e_l=avg_{w_i\in e_l}(h_i),\ E_a=avg_{e_l\in E_a}(e_l)$</p>
+<p>其中，$e_l$表示某一个mention的rep，$E_a$表示某一个entity的rep。由于收到multi-head attention的影响：将vector映射到不同的latent space会enrich 模型的信息，所以在 HIN 模型中，也是同样的做法，将得到的entity rep映射到不同的K个latent space，即</p>
+<p>​                                             $E^k_a=W^{(1)}_k(RELU(W^{(0)}_kE_a))$</p>
+<p>受到TransE算法的影响，知 $e_h+e\approx e_t$,所以在一定程度上 $E_b-E_a$,能够反映entity pair $（e_a,e_b）$的relation.所以第 $k$ 个latent space的结果是：</p>
+<p>​                                             $I^k_e=[E^k_aR^kE^k_b;E^k_b-E^k_a;E^k_a;E^k_b]$</p>
+<p>最终我们将k 个latent space的结果进行concat，根据经验，加入相对距离进一步丰富信息：</p>
+<p>​                                            $\mathbf{I}_{e}=G_{e}\left(\left[\mathbf{I}_{e}^{1} ; \ldots ; \mathbf{I}_{e}^{K} ; \mathbf{M}\left(d_{b a}\right)-\mathbf{M}\left(d_{a b}\right)\right]\right)$</p>
+<p>其中，$\mathbf{M}$ 是 embedding matrix, $d_{ab}$和$d_{ba}$是相对距离。</p>
+</li>
+<li><p><strong>Hierarchical document-level inference module：</strong></p>
+<ul>
+<li><p>Sentence-Level Inference (范围是sentence)</p>
+<p>假设一个document有$L$个句子，$w_{jt}$表示第$j$个sentence的第$t$个word，我们使用BILSTM对每一个sentence进行编码，如下：</p>
+<p>​                                      $h_{jt}=BILSTM(w_{jt}),j=1,…,L$</p>
+<p>然后借鉴HAN模型，对$h_{jt}$使用attention，然后得到sentence vector，如下：</p>
+<p>​                                      $\alpha_{jt}=u^T_wtanh(W_wh_{jt}+b_w) \\<br>a_{jt}=\frac{exp(\alpha_{jt})}{\sum_{t}exp(\alpha_{jt})} \\<br>S_j=\sum_{t}a_{jt}h_{jt}$ </p>
+<p>其中，$S_j$就是第$j$个sentence的sentence vector.我们进一步将其与$I_e$融合，如下：</p>
+<p>​                                      $I_{sj}=G_s([S_j;I_e;S_j-I_e;S_j  \ o \ I_e]) \$</p>
+<p>$S_{sj}$是最终的第$j$个sentence的sentence vector。</p>
+</li>
+<li><p>Document-Level Inference</p>
+<p>依旧借鉴HAN模型，使用BILSTM+attention的方式，得到最终的document vector.</p>
+<p>​                                        $c_{sj}=BILSTM_D(I_{sj}),j\in[1,L] \\ \alpha_{j}=u^T_stanh(W_sc_{sj}+b_s) \\ a_{jt}=\frac{exp(\alpha_{j})}{\sum_{j}exp(\alpha_{j})} \\ I_d=\sum_{j}a_{j}c_{sj}$</p>
+</li>
+</ul>
+</li>
+<li><p><strong>Prediction layer</strong></p>
+<p>我们首先对entity-level inference rep与document-level inference rep进行concat，再输入到FFN中进行最终得分类，由于实体对之间通常存在多种关系，文章中使用带有sigmoid函数的FFNN来计算每个关系的概率，如下:</p>
+<p>​                                            $P(r|E_a,E_b)=sigmoid(W_r \left[\begin{matrix}I_e \\ I_d \end{matrix}\right]+b_r)$</p>
+<p>最终的Loss采用BCE（binary cross entropy）</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/19/212733-193826.png" alt="image-20201119212731861"></p>
+</li>
+</ul>
+<hr>
+<h2 id="Experiment"><a href="#Experiment" class="headerlink" title="Experiment"></a>Experiment</h2><p>Result</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/19/214822-485953.png" alt="image-20201119214820765"></p>
+<p>Analysis by the number of supoporting sentences</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/19/214924-662586.png" alt="image-20201119214923694"></p>
 
         </div>
 
@@ -348,7 +313,7 @@ L_{E v i}^{a} &=-\frac{1}{N_{t}} \frac{1}{N_{s}} \sum_{k=1}^{N_{t}} \sum_{j=1}^{
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="http://example.com/2021/07/24/1%20Entity%20and%20Evidence%20Guided%20Relation%20Extraction%20for%20DocRED/">http://example.com/2021/07/24/1%20Entity%20and%20Evidence%20Guided%20Relation%20Extraction%20for%20DocRED/</a></span>
+                        <span><a href="http://example.com/2021/01/19/PAKDD2020%20HIN%20Hierarchical%20Inference%20Network%20for%20Document-Level%20Relation%20Extraction/">http://example.com/2021/01/19/PAKDD2020%20HIN%20Hierarchical%20Inference%20Network%20for%20Document-Level%20Relation%20Extraction/</a></span>
                     </p>
                 
                 
@@ -371,6 +336,10 @@ L_{E v i}^{a} &=-\frac{1}{N_{t}} \frac{1}{N_{s}} \sum_{k=1}^{N_{t}} \sum_{j=1}^{
                 <span>Tag(s):</span>
                 <span class="tag">
                     
+                    
+                        <a href="/tags/document-level-RE/"># document-level RE</a>
+                    
+                        
                 </span>
             </div>
             <div>
@@ -381,10 +350,10 @@ L_{E v i}^{a} &=-\frac{1}{N_{t}} \frac{1}{N_{s}} \sum_{k=1}^{N_{t}} \sum_{j=1}^{
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2021/07/24/1%20Entity%20Structure%20Within%20and%20Throughout/"></a>
+                <a class="prev" rel="prev" href="/2021/01/23/ACL2020%20Reasoning%20with%20Latent%20Structure%20Refinement%20for%20Document-Level%20Relation%20Extraction%20%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/">ACL2020 | Reasoning with Latent Structure Refinement for Document-Level Relation Extraction</a>
             
             
-            <a class="next" rel="next" href="/2021/07/24/1%20Downstream%20Model%20Design%20of%20Pre-trained%20Language%20Model%20for%20Relation%20Extraction%20Task%20%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/"></a>
+            <a class="next" rel="next" href="/2021/01/13/Arxiv2020%20Downstream%20Model%20Design%20of%20Pre-trained%20Language%20Model%20for%20Relation%20Extraction%20Task/">Arxiv2020 | Downstream Model Design of Pre-trained Language Model for Relation Extraction Task</a>
             
         </section>
 

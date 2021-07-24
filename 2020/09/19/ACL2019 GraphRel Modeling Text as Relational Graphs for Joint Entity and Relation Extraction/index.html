@@ -12,7 +12,7 @@
 
 
 
-<title>Hello World | Chenhs</title>
+<title>ACL2019 | GraphRel:Modeling Text as Relational Graphs for Joint Entity and Relation Extraction | Chenhs</title>
 
 
 
@@ -214,7 +214,7 @@
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">Hello World</h1>
+            <h1 class="post-title">ACL2019 | GraphRel:Modeling Text as Relational Graphs for Joint Entity and Relation Extraction</h1>
             
                 <div class="post-meta">
                     
@@ -223,28 +223,100 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">七月 6, 2021&nbsp;&nbsp;19:34:00</a>
+                        Date: <a href="#">九月 19, 2020&nbsp;&nbsp;12:11:22</a>
                         </span>
                     
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/categories/NLP/">NLP</a>
+                            
+                        </span>
                     
                 </div>
             
         </header>
 
         <div class="post-content">
-            <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+            <h2 id="Background"><a href="#Background" class="headerlink" title="Background"></a>Background</h2><ul>
+<li><p>论文动机</p>
+<ol>
+<li><p>重叠关系的预测：Prediction of  overlapping relations</p>
+</li>
+<li><p>关系之间的交互：Consideration of the interaction between relations</p>
+</li>
+</ol>
+</li>
+<li><p>论文贡献</p>
+<ol>
+<li>同时考虑单词对(word pair)中的<strong>线性（顺序）和依赖结构</strong>.</li>
+<li>实体与关系之间的交互被充分考虑到。(In our proposed model, stack Bi-LSTM and GCN to consider both linear and dependency structures and then adopt a 2nd-phase relation-weighted GCN to further model the interaction between entities and relations.)</li>
+</ol>
+</li>
+</ul>
+<hr>
+<h2 id="Model"><a href="#Model" class="headerlink" title="Model"></a>Model</h2><p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/18/182229-494279.png" alt="image-20200718182227473"></p>
+<p>如上图分为两个阶段： </p>
+<p>在第一阶段，我们采用Bi-LSTM和GCN两种方法来提取<strong>顺序依存词和区域依存词</strong>的特征。给定单词特征，我们预测每个单词的关系和所有单词的实体。</p>
+<p>在第二阶段，基于预测的第一阶段的关系，<strong>为==每一个关系建立完整的关系图==</strong>，在每一个图上整合实体与实体之间的每一个关系。</p>
+<h3 id="1st-phase-Prediction"><a href="#1st-phase-Prediction" class="headerlink" title="1st-phase Prediction"></a><strong>1st-phase Prediction</strong></h3><p>​    a.Bi-LSTM</p>
+<p>​    将词向量和对应的词性标签向量作为原始输入，然后利用<strong>Bi-LSTM抽取句子的顺序（依赖）特征。</strong></p>
+<p>​                                                                    $h_{u}^{0}=W \operatorname{ord}(u) \oplus \operatorname{POS}(u)$</p>
+<p>​    b.Bi-GCN</p>
+<p>​    对输入的句子进行依存句法分析，<strong>构建依存树</strong>，将依赖树作为输入句子的邻接矩阵，之后再利用Bi-GCN（consider both incoming and outgoing word features）抽取局部依赖关系。 </p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/18/183528-549721.png" alt="image-20200718183526151"></p>
+<p>​    c. Extraction of Entities and relations</p>
+<pre><code> (1) 对于实体的抽取：采用 LSTM 输出每个词的类别，并得到 $eloss1p$;
+</code></pre><p>​     (2) 对于关系的抽取：预测每个单词对之间的关系。对于单词对(w1,w2)，我们计算给定关系r的得分，如下所示，然后对所有关系(包括non关系)做一个$softmax$，得到每种关系的概率，关系预测的loss为 $rloss1p$</p>
+<p>​                                                        $S_{(w 1, r, w 2)}=W_{r}^{3} \operatorname{Re} L U\left(W_{r}^{1} h_{w 1} \oplus W_{r}^{2} h_{w 2}\right)$</p>
+<p>​        <strong>For  word pair, we calculate all of the pair’s relation tendency scores, including non-relation. And then apply the softmax function to $S_{(w 1, r, w 2)}$, yielding $P_{r}(w1,w2)$ which represents the probability of each relation $r$ for (w1, w2).</strong></p>
+<h3 id="2nd-phase-Prediction"><a href="#2nd-phase-Prediction" class="headerlink" title="2nd-phase Prediction"></a><strong>2nd-phase Prediction</strong></h3><p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/18/190637-531902.png" alt="image-20200718190636283"></p>
+<p>​                                                                                第一阶段建立好的图</p>
+<p><strong>==The extracted entities and relations 1-st-phase do not take each other into account.==</strong></p>
+<ul>
+<li><p>Relation-weighted Graph</p>
+<p>进一步考虑关系加权传播。</p>
+<p>Build complete <strong>relation-weighted graph</strong> for each relation $r$,which <strong>considers different influenced degrees of</strong> <strong>different relations</strong> and aggregates as the comprehensive word feature.</p>
+<p>​                    </p>
+<p>​                                $h_{u}^{l+1}=\operatorname{ReLU}\left(\sum_{v \in V} \sum_{r \in R} P_{r}(u, v) \times\left(W_{r}^{l} h_{v}^{l}+b_{r}^{l}\right)\right)+h_{u}^{l}$</p>
+</li>
+</ul>
+<p>  $P_{r}(u, v)$ represents the edge weight <strong>(the probability of the word $u$ and $v$ under the relation $r$)</strong></p>
+<ul>
+<li><p>Then perform named entity and relation classification <strong>again.</strong></p>
+</li>
+<li><p>Loss</p>
+<p>​                                            $loss_{all}=\left(\text {eloss}_{1 p}+\operatorname{rloss}_{1 p}\right)+\alpha\left(\text {eloss}_{2 p}+\text {rloss}_{2 p}\right)$</p>
+</li>
+</ul>
+<ul>
+<li><p>Inference</p>
+<p>因为关系抽取是对每个单词对都进行一个关系分类，所以对于由多个单词组成的实体对之间的<strong>关系预测就可能存在冲突</strong>，这里作者提出了三个方法：</p>
+<ul>
+<li><strong>head prediction：</strong>对于由多个单词组成的实体对，只取每个实体最后一个单词之间的关系作为这两个实体对之间的关系。</li>
+</ul>
+<blockquote>
+<p>比如，实体关系三元组(Barack Obama, PresidentOf, United States)被正确识别出当且仅当Barack Obama和United States是实体，并且P(Obama,States)最大概率的关系为PresidentOf。其实这里称为tail prediction比较好，因为取的是实体的最后一个单词。</p>
+</blockquote>
+<ul>
+<li><strong>average prediction</strong></li>
+</ul>
+<blockquote>
+<p>拿上个例子来说，存在四个单词对(United, Barack)、(United, Obama)、(States, Barack)、(States, Obama)，那么就有四个关系概率向量，对这四个关系概率向量求平均然后取概率最大的作为三元组的关系。</p>
+</blockquote>
+<ul>
+<li><strong>threshold prediction：</strong>与average不同，这里是对四个关系概率向量分别求概率最大的关系，然后统计每种关系的概率.</li>
+</ul>
+<blockquote>
+<p>比如PresidentOf出现两次，LocatedIn、LivedIn分别出现一次，那么对应的概率为50%、25%、25%，然后取最大的概率50%是否大于θ来调整关系的输出。</p>
+</blockquote>
+</li>
+</ul>
+<hr>
+<h2 id="Experiment"><a href="#Experiment" class="headerlink" title="Experiment"></a>Experiment</h2><h3 id="数据集"><a href="#数据集" class="headerlink" title="数据集"></a>数据集</h3><h4 id="NYT-amp-WebNLG"><a href="#NYT-amp-WebNLG" class="headerlink" title="NYT&amp;WebNLG"></a><strong>NYT&amp;WebNLG</strong></h4><p>数据集构成：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/19/212310-166685.png" alt="image-20200719212308789"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/19/211931-968069.png" alt="image-20200719211930269"></p>
 
         </div>
 
@@ -259,7 +331,7 @@
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="http://example.com/2021/07/06/hello-world/">http://example.com/2021/07/06/hello-world/</a></span>
+                        <span><a href="http://example.com/2020/09/19/ACL2019%20GraphRel%20Modeling%20Text%20as%20Relational%20Graphs%20for%20Joint%20Entity%20and%20Relation%20Extraction/">http://example.com/2020/09/19/ACL2019%20GraphRel%20Modeling%20Text%20as%20Relational%20Graphs%20for%20Joint%20Entity%20and%20Relation%20Extraction/</a></span>
                     </p>
                 
                 
@@ -282,6 +354,10 @@
                 <span>Tag(s):</span>
                 <span class="tag">
                     
+                    
+                        <a href="/tags/Sentence-Level-RE/"># Sentence Level RE</a>
+                    
+                        
                 </span>
             </div>
             <div>
@@ -292,10 +368,10 @@
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2021/07/24/1%20Connecting%20the%20Dots%20Document-level%20Neural%20Relation%20Extraction%20with%20Edge-oriented%20Graphs/"></a>
+                <a class="prev" rel="prev" href="/2021/01/13/Arxiv2020%20Downstream%20Model%20Design%20of%20Pre-trained%20Language%20Model%20for%20Relation%20Extraction%20Task/">Arxiv2020 | Downstream Model Design of Pre-trained Language Model for Relation Extraction Task</a>
             
             
-            <a class="next" rel="next" href="/2021/05/13/AAAI2021%20Document-Level-Relation-Extraction-with-Reconstruction/">AAAI2021 | Document-Level Relation Extraction with Reconstruction</a>
+            <a class="next" rel="next" href="/2020/07/27/ACL2019%20Graph%20Neural%20Networks%20with%20Generated%20Parameters%20for%20Relation%20Extraction/">ACL2019 | Graph Neural Networks with Generated Parameters for Relation Extraction</a>
             
         </section>
 

@@ -12,7 +12,7 @@
 
 
 
-<title>Chenhs</title>
+<title>Arxiv2020 | Downstream Model Design of Pre-trained Language Model for Relation Extraction Task | Chenhs</title>
 
 
 
@@ -214,7 +214,7 @@
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title"></h1>
+            <h1 class="post-title">Arxiv2020 | Downstream Model Design of Pre-trained Language Model for Relation Extraction Task</h1>
             
                 <div class="post-meta">
                     
@@ -223,44 +223,81 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">七月 24, 2021&nbsp;&nbsp;16:07:32</a>
+                        Date: <a href="#">一月 13, 2021&nbsp;&nbsp;17:09:22</a>
                         </span>
                     
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/categories/NLP/">NLP</a>
+                            
+                        </span>
                     
                 </div>
             
         </header>
 
         <div class="post-content">
-            <p>因为看了很多篇文档级关系抽取的paper，几乎最新的全都看完了，这篇博客主要是写一写我看完这些paper的思考以及新的idea吧</p>
-<h2 id="Document-level-RE"><a href="#Document-level-RE" class="headerlink" title="Document-level RE"></a>Document-level RE</h2><p>在document-level RE中，目前在论文中使用的数据集有三个：CDR、GDA、DocRED，前两个是biochemistry datasets，后一个通用的数据集。在目前的Document-level RE model中，分为两种：1. 基于graph的模型；2.基于BERT以及BERT-like来做，但是在顶层结构或者输入部分做一些改动，譬如：加入新的embedding或者使用LOP技术来提升效果。下面分别来讲～</p>
-<ol>
-<li><p>基于graph的model</p>
-<p>目前基于graph的模型有：GCNN、EoG、LSR、GAIN、GLRE，GCNN是比较早的模型，主要是构建了异质图，然后采用了不同种类的GCN来做(这一点后面很多模型都follow了，还不错)，EoG模型可谓是开山之作，基本上后面的LSR、GLRE、GAIN都是继承了EoG的思想，它主要的贡献是：提出了entity pair之间唯一的path rep能够更好的表达relation，设计了inference机制，主要是为了解决logical reasoning提供了很好的思路；LSR模型主要的贡献是：通过矩阵树原理，让模型自己学习到哪些node之间的edge是重要的，哪些是不重要的，还是用的GCN；GAIN模型的主要的贡献是：我觉得算是集大成者吧，一方面node-oriented 的方法(与GCNN一样)，另一方面设计了path reasoning机制(借鉴EoG模型)，从mention开始，构建mention-level graph，然后相当于聚类，得到entity-level graph，最后得到relation，还是蛮优雅的；GLRE模型对于mention之间的关系采用的是transformer机制来做，这点还是可以深入做的，但是整体一般。</p>
-</li>
-<li><p>基于BERT-like的model</p>
-<p>目前基于BERT-like的模型有：corefBERT、ATLOP、E2GRE，(HIN算是异类)，corefBERET就不多说了，主要是引入了coreference embedding，ATLOP模型主要的贡献是：一个是LOP技术，因为使用BERT得到的entiy的rep，对于不同的entity pair来说都是一样的，这是不对的，在ATLOP中，将BERT最后一层的attention值引入进来，从而让不同的entity pair的rep变得不一样，从而提升效果，这个还是蛮惊艳的，另一个是Adaptive thresholding，目的是让不同的entity pair的不同relation的预测的阈值不一样，从而提升效果；E2GRE模型主要的贡献是：==将evidence detection作为一个辅助任务，从而与main model一起训练，但是结果一般，我觉这块还是可以再做做的。==</p>
-</li>
-</ol>
-<p>目前可以改进的地方</p>
-<ol>
-<li>主要的问题有三个：logical reasoning、coreference reasoning、common-sense reasoning。其中logical reasoning占主要部分，所以==怎么设计一个好的inference机制是至关重要的？==</li>
-<li>另外，目前在基于graph的方法中，基本上都是采用GCN模型来做，但是构建的图本身是异质图神经网络，是否可以之间采用异质图神经网络模型来做，效果是否会更好？另外，是否可以考虑有向图？</li>
-<li>怎么引入先验知识？</li>
-<li>和evidence detection任务结合？</li>
-<li>不同mention的重要性是不一样的，怎么解决？</li>
-<li>最重要的，怎么构建graph？我觉得这个应该是核心创新点。</li>
-</ol>
-<h2 id="Dialogue-based-RE"><a href="#Dialogue-based-RE" class="headerlink" title="Dialogue-based RE"></a>Dialogue-based RE</h2><p>这一块是今年ACL2020新提出来的坑，提出了新的数据集DialogRE，主要是做对话上的关系抽取。之前的DRE模型都没有考虑到speaker的信息，所以效果并不好。基于此，有人提出了HGAT模型来做DialogRE。主要的方法是：首先通过5种不同类型的node与edge，来构建异质图，然后先对utterance进行编码，然后使用GAT模型来进行aggreagte，由于是异质图，所以设计了新的metapath机制来进行message passing，最后是classifier。个人觉得可以改进的点有：</p>
+            <h2 id="Background"><a href="#Background" class="headerlink" title="Background"></a>Background</h2><ul>
+<li><p>前情概要</p>
+<p><strong>Overlapping relations</strong> </p>
 <ul>
-<li>在utterance encoder这块，paper中采用的是BILSTM，其实完全可以采用BERT等一系列模型来进行编码，效果应该会更好；</li>
-<li>在graph construction这块，由于paper中消融实验没有做关于node与edge的实验，所以具体的还不不知道各个node与edge到底起了多大的作用，但是个人感觉其实是可以更加优雅的，不需要借助POS tag这种工具应该也能够得到更好的效果，具体来说，可以去掉某些node，去掉某些边，来构建图；</li>
-<li>在graph aggregate这块，其实有两种改进的思路：第一种就是和HGAT模型一样，采用更加先进的异质图神经网络来进行aggregate，但是感觉没有什么创新，你只是拿过来用而已，可以具体去看看HGNN的论文；第二种可以采用多种类型GCN的和来进行更新；</li>
-<li>可以增加inference这块，唯一的path rep能够更好的表达relation，这个在EoG模型中提到了；</li>
-<li>以上是基于graph的方法的改进，如果不采用基于graph的方法，其实可以像ATLOP模型一样，在BERT的基础上吗，设计一些新的结构来保证结果的提升，这个就需要想办法；</li>
-<li>最后，想办法将trigger的信息融入到模型中，其实和E2GRE模型类似，但是效果的话，无法保证，我觉得也是一种改进的思路。</li>
+<li><strong>Normal: All relations in the sample is normal.</strong></li>
+<li><strong>EPO: there are at least two relations overlapped in the same entity-pair in the sample.</strong></li>
+<li><strong>SEO: there are at least two relations sharing a single entity.</strong></li>
 </ul>
-<h3 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h3><p>其实document-level RE与Dialogue RE挺相似的，严格来说，Dialogue RE是属于document-level RE的，目前来说，还是有东西可以做的，但是需要实验，还需要补HGNN的东西以及检索式多轮对话的东西(好久没看了)🥳</p>
+<p><strong>Multiple relations</strong></p>
+<ul>
+<li><strong>Single: only one relation appears in the sample</strong></li>
+<li><strong>Double: two</strong></li>
+<li><strong>Multiple: no less than three</strong></li>
+</ul>
+</li>
+<li><p>论文动机</p>
+<ol>
+<li>当前的PLMs没有专门针对关系抽取这个任务设置</li>
+<li>long-distance relation/single sentence with multiple relations/overlapped relations三大问题现有的方法都没有很好的解决。</li>
+</ol>
+</li>
+<li><p>论文贡献（==2,3待写==）</p>
+<ol>
+<li>使用预训练语言模型替代之前的传统的编码器。</li>
+<li>使用参数化非对称核内积矩阵(A parameterized asymmetric kernel inner product matrix)计算头实体和尾实体embedding（the head and tail embeddings of each token in a sequence），此矩阵可以被视为 <strong>the tendency score to indicate a certain relation.</strong></li>
+<li>使用Sigmoid分类器取代Softmax分类器，使用average probability as the final probability.这样做好的好处在于可以使得预测在同一实体间的多种关系。</li>
+<li>两个创新点（Network structure; Loss function）</li>
+</ol>
+</li>
+</ul>
+<h2 id="Model"><a href="#Model" class="headerlink" title="Model"></a>Model</h2><p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/21/111530-618089.png" alt="image-20200721111530162"></p>
+<p><strong>Encoder</strong>:得到给定文本下的三种embedding.(==经过微调训练后，具有较高注意力得分的单词在某种程度上对应于某种关系的谓词==)</p>
+<p>尾实体计算：$E_{p}=Transformer(E_{w})$，</p>
+<p>$E_{p}$ is the last output vector,$E_{w}$是BERT的倒数第二层 output vector。</p>
+<p>头实体计算：$E_{b}=E_{w}+E_{a}$ </p>
+<p>$E_{a}$: BERT’s  CLS embedding is added in order to capture the overall context information.</p>
+<h4 id="Relation-Computing-Layer"><a href="#Relation-Computing-Layer" class="headerlink" title="Relation Computing Layer"></a><strong>Relation Computing Layer</strong></h4><p>计算$E_{b}和E_{p}$之间的相似度。</p>
+<p>$\boldsymbol{S}_{i}=F_{i}\left(\boldsymbol{E}_{b}, \boldsymbol{E}_{p}\right)$</p>
+<p>其中，$F_{i}(\boldsymbol{X}, \boldsymbol{Y})=\boldsymbol{X} \boldsymbol{W}_{h i} \cdot\left(\boldsymbol{Y} \boldsymbol{W}_{t i}\right)^{T}$</p>
+<p>$W_{hi}和W_{ti}$分别是头实体和尾实体在第$i$种关系下的transformation matrices.</p>
+<p>$S_{i}$是一个方形矩阵，可以被视为非归一化概率分数 between all tokens in $i$-th relation，也就是说$S_{i mn}$表示==在位置（m,n）处的token存在关系$i$的可能性==</p>
+<p>来整个归一化~：<br>                                                                <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/21/165316-520159.png" alt="image-20200721165315257"></p>
+<h4 id="Loss-Calculation"><a href="#Loss-Calculation" class="headerlink" title="Loss Calculation"></a><strong>Loss Calculation</strong></h4><p><strong>NOTE</strong>：上述的$P_{i}$所描述的关系是between tokens,not entities.使用entity-mask matrix解决这个问题。</p>
+<p>假设文本$T$中所有的实体对为集合$S$，$\mathbb{S}=\{(x, y)\}$.    #排列组合#</p>
+<p>我们构造 A mask matrix $\boldsymbol{M}$,    $\boldsymbol{M} \in \mathbb{R}^{l \times l}$,   $l$是 text length $l$. $(B_{x},E_{x})$是实体$x$位置index开始和结束。==Use this mask matrix to reserve the predicted probabilities of every entity pair from $\boldsymbol{P_{i}}$ .==</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/21/170532-586464.png" alt="image-20200721170531920"></p>
+<p>其中,m,n是matrix element的下标，同时我们构造一个 lable matrix $\boldsymbol{Y_{i}}$   (Ground Truth),  $\boldsymbol{Y} \in \mathbb{R}^{l \times l}$</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/21/170552-648744.png" alt="image-20200721170551484"></p>
+<p> $\boldsymbol{Y_{i}}$ is the labeled $i$-th relation set of entity pairs from the input text $T$</p>
+<p>Then use <strong>average Binary Cross Entropy</strong>(二分类交叉熵)</p>
+<p>​                                                               $L_{i}=B C E_{a v g}\left(\boldsymbol{P}_{i} * \boldsymbol{M}, \boldsymbol{Y}_{i}\right)$</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/21/173444-846739.png" alt="image-20200721173443156"></p>
+<p>LOSS：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/21/173822-576621.png" alt="image-20200721173820784"></p>
+<p>$i$是relation 的index</p>
+<p><img src="https://raw.githubusercontent.com/chenhaishun/test_pic/master/typora202101/31/203606-818918.png" alt="image-20210131203604605"></p>
+<h2 id="Experiment"><a href="#Experiment" class="headerlink" title="Experiment"></a>Experiment</h2><p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/21/214142-27139.png" alt="image-20200721214140689"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/21/173919-833088.png" alt="image-20200721173918237"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202007/21/173943-710396.png" alt="image-20200721173942255"></p>
 
         </div>
 
@@ -275,7 +312,7 @@
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="http://example.com/2021/07/24/1%20Document-level%20RE/">http://example.com/2021/07/24/1%20Document-level%20RE/</a></span>
+                        <span><a href="http://example.com/2021/01/13/Arxiv2020%20Downstream%20Model%20Design%20of%20Pre-trained%20Language%20Model%20for%20Relation%20Extraction%20Task/">http://example.com/2021/01/13/Arxiv2020%20Downstream%20Model%20Design%20of%20Pre-trained%20Language%20Model%20for%20Relation%20Extraction%20Task/</a></span>
                     </p>
                 
                 
@@ -298,6 +335,10 @@
                 <span>Tag(s):</span>
                 <span class="tag">
                     
+                    
+                        <a href="/tags/document-level-RE/"># document-level RE</a>
+                    
+                        
                 </span>
             </div>
             <div>
@@ -308,10 +349,10 @@
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2021/07/24/1%20Document-Level%20Relation%20Extraction%20with%20Adaptive%20Thresholding%20and/"></a>
+                <a class="prev" rel="prev" href="/2021/01/19/PAKDD2020%20HIN%20Hierarchical%20Inference%20Network%20for%20Document-Level%20Relation%20Extraction/">PAKDD2020 | HIN:Hierarchical Inference Network for Document-Level Relation Extraction</a>
             
             
-            <a class="next" rel="next" href="/2021/07/24/1%20Connecting%20the%20Dots%20Document-level%20Neural%20Relation%20Extraction%20with%20Edge-oriented%20Graphs/"></a>
+            <a class="next" rel="next" href="/2020/09/19/ACL2019%20GraphRel%20Modeling%20Text%20as%20Relational%20Graphs%20for%20Joint%20Entity%20and%20Relation%20Extraction/">ACL2019 | GraphRel:Modeling Text as Relational Graphs for Joint Entity and Relation Extraction</a>
             
         </section>
 

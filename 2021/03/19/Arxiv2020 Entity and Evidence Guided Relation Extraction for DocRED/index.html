@@ -12,7 +12,7 @@
 
 
 
-<title>Chenhs</title>
+<title>Arxiv2020 | Document-Level Relation Extraction with Reconstruction | Chenhs</title>
 
 
 
@@ -214,7 +214,7 @@
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title"></h1>
+            <h1 class="post-title">Arxiv2020 | Document-Level Relation Extraction with Reconstruction</h1>
             
                 <div class="post-meta">
                     
@@ -223,9 +223,16 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">七月 24, 2021&nbsp;&nbsp;16:07:32</a>
+                        Date: <a href="#">三月 19, 2021&nbsp;&nbsp;17:09:22</a>
                         </span>
                     
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/categories/NLP/">NLP</a>
+                            
+                        </span>
                     
                 </div>
             
@@ -233,153 +240,107 @@
 
         <div class="post-content">
             <h2 id="Snapshot"><a href="#Snapshot" class="headerlink" title="Snapshot"></a>Snapshot</h2><ul>
-<li><p>模型名称：SSAN（<strong>S</strong>tructured <strong>S</strong>elf-<strong>A</strong>ttention <strong>N</strong>etwork）</p>
-</li>
-<li><p>论文来源：AAAI 2021 中科大 </p>
+<li><p>论文来源：arXiv-2020.08 #JD AI Research#</p>
 </li>
 <li><p>面向任务：DocRE</p>
 </li>
 <li><p>方法分类：BERT-based</p>
 </li>
-<li><p>论文动机：着重关注于entity structure, 以往都是将这部分作为一个补充信息或者通过一个精心设计的图结构(delicately designed)引入entity structure。在基于graph的方法中，context reasoning 与 structure reasoning是分开的(isolation)，作者认为这样不合理。</p>
+<li><p>论文动机：</p>
+<p>众所周知，文档内实体对关系的判断主要是依据与当前实体最相关的support/evidence sentence。根据这一动机设计一种可以引导预训练模型集中focus文档中最相关的位置，而往常PLMs在处理文档时需要同时encode关于所有实体对相关的信息。因此，attention values over all token are more uniform。同时suporting/evidence sentences can be used as an auxiliary task for explainable RE.</p>
+</li>
+<li><p>指标分数：Ign F1:60.3 ; F1:62.5(RoBERTa-large)</p>
 <blockquote>
-<p>观点：The contextual representations cannot <strong>benefit from structure guidance</strong> in the first place. Thus, structural dependencies should be incorporated within the encoding network and throughout the overall system. 即在编码阶段融入结构依赖信息。</p>
+<p>并未提及BERT-based的test结果 。</p>
 </blockquote>
 </li>
-<li><p>指标分数：</p>
-<ul>
-<li><p>Ign F1:56.06;F1:58.41(BERT Base)   </p>
+<li><p>快看速评：论文动机很简单，方法也比较优雅。但是对方法的合理性（比如在头部拼接实体是否真正可以起到引导预训练模型的fine-tuning有待考究），另外整个模型的计算复杂度肯定不低吧，自称SOTA，其实效果也勉勉强强，实验的分析比较单薄，这就是工业界论文的风格？</p>
 </li>
-<li><p>Ign F1:63.78;F1:65.92 (+Adaptation预训练 )</p>
-<blockquote>
-<p>BERT Base并没有LSR指标好，Adaptiation思路可以借鉴；</p>
-</blockquote>
-</li>
-</ul>
-</li>
-<li><p>快看速评：<del>动机来得比较奇怪，很好奇怎么会有这个动机，</del>大部分基于PLMs的模型往往都忽略了文档本身所带包含的结构依赖信息（such dependencies 能够反映在实体mention间丰富的交互），而只是从context的角度出发去更新实体表示，进而进行下一步的关系分类；或者基于图结构编码文本结构信息和 conextual 信息是</p>
-</li>
-<li><p>在不同的 module 使用的（如LSR）。作者认为自己的模型可以同时进行context reasoning和structure reasoning。</p>
-</li>
-<li><p>代码复现：<a target="_blank" rel="noopener" href="https://github.com/BenfengXu/SSAN">https://github.com/BenfengXu/SSAN</a></p>
-</li>
-</ul>
-<h3 id="Method"><a href="#Method" class="headerlink" title="Method"></a>Method</h3><p><strong>SSAN核心在于formulate entity structure priors到attention biases,利用attention biass调整self-attention的propagation.</strong></p>
+<li><p>代码复现：待公开</p>
 <div align="center">
-        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/21/104317-728900.png">  
+        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/11/150353-687394.png">  
     </a>
 </div>
 
-<ol>
-<li><p>预定义mentions之间的关系：</p>
-<ul>
-<li>Co-occurrence structure: 两个mention出现在同一个sentence。</li>
-<li>Coreference structure:两个mention指向同一实体。</li>
+</li>
 </ul>
-<div align="center">
-        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/19/201139-22843.png">  
+<h2 id="Method"><a href="#Method" class="headerlink" title="Method"></a>Method</h2><div align="center">
+        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/11/152958-308751.png">  
     </a>
 </div>
 
-<p>而对于非entity的words之间，若在同一sentence中，记为<em>intraNE</em>，在不同句子中记为<em>NA</em>；</p>
-<p>The overall structure is formulated into an entity-centric adjacency matrix with its elements from a finite dependency set.</p>
-<p>整个结构被公式化为以实体为中心的邻接矩阵，其所有元素来自一个有限的依赖集;</p>
-<p>总计为6种结构关系：<em>{intra+coref, inter+coref, intra+relate, inter+relate, intraNE, NA}</em></p>
+<h3 id="实体引导下的关系抽取"><a href="#实体引导下的关系抽取" class="headerlink" title="实体引导下的关系抽取"></a>实体引导下的关系抽取</h3><ol>
+<li><p>要引导，怎么引导PLM关注当前实体呢？</p>
+<p>A：生成Entity-guided Input Sequences，以此引导PLM towards the entities.(<u>合理性存疑</u>)</p>
+<p>具体做法是在document前concatenate the first mention of a single entity.</p>
+<p>表示为“[CLS]”+<em>H</em>+”[SEP]”+<em>D</em>+”[SEP]”, 当模型存在有$N_e$个实体，那么就会有$N_e$个新的输入。</p>
 </li>
-<li><p>设定 token sequence $x = (x_1,x_2,\dots,x_n)$ 以及 $S=\left\{s_{ij}\right\}$ , $s_{i j} \in$ <em>{intra+coref, inter+coref, intra+relate, inter+relate, intraNE, NA}</em>，根据输入$x$, 得到相应的query/key/value vector：</p>
+<li><p>文档首部合并实体之后经BERT得到Output后，下一步关系抽取怎么做？</p>
+<p>head entity, tail entity与关系权重 $W_{i}$（learnable）相乘做线性变换：</p>
+<script type="math/tex; mode=display">
+\hat{y}_{i k}=\delta\left(\boldsymbol{h}^{T} \boldsymbol{W}_{i} \boldsymbol{t}_{k}+b_{i}\right)</script><p>此时的Loss定义为：</p>
 <blockquote>
-<p>实际编码</p>
+<p>到这一步，只能算是无脑BERT；</p>
 </blockquote>
 <script type="math/tex; mode=display">
-\boldsymbol{q}_{i}^{l}=\boldsymbol{x}_{i}^{l} \boldsymbol{W}_{l}^{Q}, \boldsymbol{k}_{i}^{l}=\boldsymbol{x}_{i}^{l} \boldsymbol{W}_{l}^{K}, \boldsymbol{v}_{i}^{l}=\boldsymbol{x}_{i}^{l} \boldsymbol{W}_{l}^{V}</script><p>给定输入，计算<strong>unstructured attention score</strong>:</p>
-<script type="math/tex; mode=display">
-e_{i j}^{l}=\frac{\boldsymbol{q}_{i}^{l} \boldsymbol{k}_{j}^{l^{T}}}{\sqrt{d}}</script><p>与计算<strong>structured attention bias</strong>: </p>
-<blockquote>
-<p>To incorporate the discrete structure $s_{ij}$ conditioned on their contextualized query / key representation：</p>
-</blockquote>
-</li>
+\begin{aligned}
+L_{R E} &=-\frac{1}{N_{r}} \frac{1}{N_{e}-1} \sum_{k=1}^{N_{e}-1} \sum_{i=1}^{N_{r}}\left(y_{i k} \log \left(\hat{y}_{i k}\right)\right.
+\left.+\left(1-y_{i k}\right) \log \left(1-\hat{y}_{i k}\right)\right)
+\end{aligned}</script></li>
 </ol>
-<script type="math/tex; mode=display">
-bias_{ij}^l=\frac{\operatorname{transformation}\left(\boldsymbol{q}_{i}^{l}, \boldsymbol{k}_{j}^{l}, s_{i j}\right)}{\sqrt{d}}</script><p>   Transformation Module:</p>
-<ul>
-<li><p>Biaffine Transformation</p>
-<script type="math/tex; mode=display">
-bias _{i j}^{l}=\boldsymbol{q}_{i}^{l} \boldsymbol{A}_{l, s_{i j}} \boldsymbol{k}_{j}^{l^{T}}+b_{l, s_{i j}}</script></li>
-<li><p>Decomposed Linear Transformation</p>
-<script type="math/tex; mode=display">
-bias_{i j}^{l}=\boldsymbol{q}_{i}^{l} \boldsymbol{K}_{l, s_{i j}}^{T}+\boldsymbol{Q}_{l, s_{i j}} \boldsymbol{k}_{j}^{l^{T}}+b_{l, s_{i j}}</script><blockquote>
-<p>$b_{l, s_{i j}}$: prior bias, independent to its context.</p>
+<h3 id="支撑句引导下的关系抽取"><a href="#支撑句引导下的关系抽取" class="headerlink" title="支撑句引导下的关系抽取"></a>支撑句引导下的关系抽取</h3><h4 id="支撑句预测："><a href="#支撑句预测：" class="headerlink" title="支撑句预测："></a>支撑句预测：</h4><p>预测一给定句子是否为一给定关系的支撑句。即sentence $j$ 是否为关系$r_i$的支撑句的分数：</p>
+<blockquote>
+<p>$k$ 表示尾实体的序号吗？如果不是，那尾部实体的信息从何体现呢？？如果是，哪里有尾实体的信息呢？奇奇怪怪的$k$</p>
 </blockquote>
-</li>
-</ul>
-<ol>
-<li>计算在pre-specified relation下的概率<script type="math/tex; mode=display">
-P_{r}\left(\boldsymbol{e}_{s}, \boldsymbol{e}_{o}\right)=\operatorname{sigmoid}\left(\boldsymbol{e}_{s} \boldsymbol{W}_{r} \boldsymbol{e}_{o}\right)</script>Cross entropy loss：<script type="math/tex; mode=display">
-L=\sum_{<s, o>} \sum_{r} CrossEntropy \left(P_{r}\left(\boldsymbol{e}_{s}, \boldsymbol{e}_{o}\right), \bar{y}_{r}\left(\boldsymbol{e}_{s}, \boldsymbol{e}_{o}\right)\right)</script></li>
-</ol>
-<h3 id="Experiment"><a href="#Experiment" class="headerlink" title="Experiment"></a>Experiment</h3><ul>
-<li>如下,大部分情况下Biaffine Transformation较Decomposition Linear Transformation更好，总体效果在BERT作为PLMs下，效果还是不如LSR（   yyds！）</li>
-</ul>
+<script type="math/tex; mode=display">
+\begin{array}{l}
+\boldsymbol{f}_{j k}^{i}=\boldsymbol{s}_{j} \boldsymbol{W}_{i}^{r} \boldsymbol{r}_{i}+b_{i}^{r} \\
+\hat{\boldsymbol{y}}_{j k}^{i}=\delta\left(\boldsymbol{f}_{j k}^{i} \boldsymbol{W}_{o}^{r}+b_{o}^{r}\right) 公式（3）
+\end{array}</script><p>此时的Loss定义为：（$N_t$表示了什么？）</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+L_{E v i} &=-\frac{1}{N_{t}} \frac{1}{N_{s}} \sum_{k=1}^{N_{t}} \sum_{j=1}^{N_{s}}\left(y_{j k}^{i} \log \left(\hat{\boldsymbol{y}}_{j k}^{i}\right)\right.\left.+\left(1-y_{j k}^{i}\right) \log \left(1-\hat{\boldsymbol{y}}_{j k}^{i}\right)\right)
+\end{aligned}</script><h4 id="支撑句下的BERT微调："><a href="#支撑句下的BERT微调：" class="headerlink" title="支撑句下的BERT微调："></a>支撑句下的BERT微调：</h4><p>依据BERT内部的 attention probabilities 来给予支撑句更高的attention value.</p>
+<p>针对每一实体对($head$, $tail$),取BERT最后输出的$l$层中，由此计算出文档中的sentence们在当前实体对下的“所需要关注度” —$a_{sk}$（一顿操作并没有看懂，特别是维度那块看起来很奇怪…）</p>
+<blockquote>
+<p>下面的公式可以看作是对公式（3）的“微操”，为预测的支撑句加上权重。</p>
+</blockquote>
+<script type="math/tex; mode=display">
+\hat{\boldsymbol{y}}_{k}^{i a}=\delta\left(\boldsymbol{a}_{s k} \boldsymbol{W}_{i}^{a} \boldsymbol{f}_{k}^{i}+b_{i}^{a}\right)</script><p>此时Loss如下：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+L_{E v i}^{a} &=-\frac{1}{N_{t}} \frac{1}{N_{s}} \sum_{k=1}^{N_{t}} \sum_{j=1}^{N_{s}}\left(y_{j k}^{i a} \log \left(\hat{\boldsymbol{y}}_{j k}^{i a}\right)\right.\left.+\left(1-y_{j k}^{i a}\right) \log \left(1-\hat{\boldsymbol{y}}_{j k}^{i a}\right)\right)
+\end{aligned}</script><h4 id="关系抽取与支撑句预测联合训练"><a href="#关系抽取与支撑句预测联合训练" class="headerlink" title="关系抽取与支撑句预测联合训练"></a>关系抽取与支撑句预测联合训练</h4><script type="math/tex; mode=display">
+\operatorname{Loss}=L_{R E}+\lambda_{1} * L_{E v i}^{a}</script><blockquote>
+<p>以上全部为自己的个人理解，文章出发点不错，但是很多地方都描述不清楚…!!</p>
+</blockquote>
+<h2 id="Experiment"><a href="#Experiment" class="headerlink" title="Experiment"></a>Experiment</h2><p>用了体量更大的模型RoBERTa-large在线test中取得不错的效果，换作BERT之后只在validation set上比较，这不是耍流氓吗？</p>
 <div align="center">
-        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/20/170020-286198.png">  
+        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/12/230446-597435.png">  
     </a>
 </div>
 
 <ul>
-<li><p>+Adaptation</p>
-<ul>
-<li><p>动机：Newly introduced transformation layer与 pretrained Transformer models 存在 distribution gap</p>
-</li>
-<li><p>做法：在finetuning on人工精标训练集前，在大量的远程监督数据集上先pretrain下。</p>
-<blockquote>
-<p>distribution gap 待考证 TODO-2</p>
-</blockquote>
-</li>
-</ul>
-</li>
-<li><p>消融实验</p>
-<ul>
-<li><p>每一个预定的mentions 间关系都很重要，缺一不可</p>
-</li>
-<li><p>Bias Term中，在decomposed Linear Transformation下，key conditioned bias 较 query conditioned bias对性能影响更大。</p>
-<blockquote>
-<p>key vectors might be associated with more entity structure information ???</p>
-<p>有待考究其具体意义表示 TODO</p>
-</blockquote>
-</li>
-</ul>
-</li>
-<li><p>可视化Attentive Biases</p>
-<ul>
-<li>底层layer受structured  bias影响较小；在顶层layer中，structural priors开始发力；</li>
-<li>其中，Inter+coref significantly positive,也符合人类常识；</li>
-<li>下图的右侧图中，bias施加在底层的影响小于对顶层的影响。</li>
-</ul>
-</li>
-</ul>
+<li><p>直到看到消融那里发现作者说联合训练效果是最差的？所以这篇文章到底说明了什么？还是我理解错了？</p>
 <div align="center">
-        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/22/101503-711635.png">  
+        <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/12/233822-176160.png">  
     </a>
 </div>
-
-<h3 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h3><ol>
-<li><p>文献阅读：</p>
-<p>[1] Simultaneously Self-Attending to All Mentions for Full-Abstract Biological Relation Extraction # multi-instance learning</p>
-<p>[2] Self-Attention with Relative Position Representations 作者称此篇启发了这篇工作</p>
-<p>[3] Transformer-XL: Attentive Language Models beyond a Fixed-Length Context</p>
-<p>[4] Extracting Multiple-Relations in OnePass with Pre-Trained Transformers.</p>
 </li>
-<li><p>Distribution gap 怎么减小这类gap?</p>
+<li><p>使用BERT最后三层效果最好，见TODO第二条；</p>
 </li>
-<li><p>transformer中三个向量的意义考究。</p>
+<li><p>attention可视化比较有意思，看了TODO第二条再反过来看吧。</p>
+<p>结论：除了关注头尾实体之外，也开始关注于前后实体相关的短语，支撑句等区域。另外，attention value的scale也比baseline更大，更宽泛。。。</p>
 </li>
-</ol>
-<p> $A_{l,s_{i,j}}$或者$K_{l,s_{i,j}}, Q_{l,s_{i,j}}$,</p>
-<p>对于定义的5种依赖关系，随机初始化5组可学习的$A$或者$K, Q$,其分别对应于五种依赖关系（NA关系不建模？），对于特定的token $i$, token$j$，其带给原本attention score的偏差根据不同的依赖关系不同（体现在于计算bias时用的是哪个可学习$A$或者$K, Q$）</p>
-<p>师兄 如果每一transfomer layer中计算bias的A或者K，Q都不同，那初始化就不止五组A或K，Q了，而是5*l组A或K，Q了（我是不是哪里理解错了）</p>
-<p>是啊，每一层都有新的AKQ</p>
-<p>总觉得是不是应该只有5组 A,K,Q，每层共享会不会好一些呢，这样这5组A,K,V就唯一表示了五组依赖关系….</p>
-<p>但是transformer每一层的representation是不同的，AKQ模块需要和每一层的hidden representation的k和q交互，是自适应的，layer 0的k,q和layer11的k,q不在同一个表示空间里，所以这里也引入了不同的AKQ模块去拟合它们</p>
+</ul>
+<h2 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h2><ul>
+<li><p>新思路：先验（BERT）+推理（Graph）</p>
+<p>相比较于精心构图，设计节点连接方式，BERT-based的方法确实稍微优雅些，应该在可解释性方面多投入一些精力，发挥出bert的全部潜力</p>
+<ul>
+<li>BERT内部attention ：What Does BERT Look At? An Analysis of BERT’s Attention</li>
+</ul>
+</li>
+</ul>
 
         </div>
 
@@ -394,7 +355,7 @@ L=\sum_{<s, o>} \sum_{r} CrossEntropy \left(P_{r}\left(\boldsymbol{e}_{s}, \bold
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="http://example.com/2021/07/24/1%20Entity%20Structure%20Within%20and%20Throughout/">http://example.com/2021/07/24/1%20Entity%20Structure%20Within%20and%20Throughout/</a></span>
+                        <span><a href="http://example.com/2021/03/19/Arxiv2020%20Entity%20and%20Evidence%20Guided%20Relation%20Extraction%20for%20DocRED/">http://example.com/2021/03/19/Arxiv2020%20Entity%20and%20Evidence%20Guided%20Relation%20Extraction%20for%20DocRED/</a></span>
                     </p>
                 
                 
@@ -417,6 +378,10 @@ L=\sum_{<s, o>} \sum_{r} CrossEntropy \left(P_{r}\left(\boldsymbol{e}_{s}, \bold
                 <span>Tag(s):</span>
                 <span class="tag">
                     
+                    
+                        <a href="/tags/document-level-RE/"># document-level RE</a>
+                    
+                        
                 </span>
             </div>
             <div>
@@ -427,8 +392,10 @@ L=\sum_{<s, o>} \sum_{r} CrossEntropy \left(P_{r}\left(\boldsymbol{e}_{s}, \bold
         </section>
         <section class="post-nav">
             
+                <a class="prev" rel="prev" href="/2021/03/24/AAAI2021%20Multi-view%20Inference%20for%20Relation%20Extraction%20with%20Uncertain%20Knowledge/">AAAI2021 | Multi-view Inference for Relation Extraction with Uncertain Knowledge</a>
             
-            <a class="next" rel="next" href="/2021/07/24/1%20Entity%20and%20Evidence%20Guided%20Relation%20Extraction%20for%20DocRED/"></a>
+            
+            <a class="next" rel="next" href="/2021/03/04/ACL2018-A-Walk-based-Model-on-Entity-Graphs-for-Relation-Extraction/">ACL2018 | A Walk-based Model on Entity Graphs for Relation Extraction</a>
             
         </section>
 

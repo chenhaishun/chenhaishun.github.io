@@ -12,7 +12,7 @@
 
 
 
-<title>Chenhs</title>
+<title>AAAI2021 | Document-Level Relation Extraction with Adaptive Thresholding | Chenhs</title>
 
 
 
@@ -214,7 +214,7 @@
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title"></h1>
+            <h1 class="post-title">AAAI2021 | Document-Level Relation Extraction with Adaptive Thresholding</h1>
             
                 <div class="post-meta">
                     
@@ -223,16 +223,23 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">七月 24, 2021&nbsp;&nbsp;16:07:32</a>
+                        Date: <a href="#">三月 3, 2021&nbsp;&nbsp;17:09:22</a>
                         </span>
                     
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/categories/NLP/">NLP</a>
+                            
+                        </span>
                     
                 </div>
             
         </header>
 
         <div class="post-content">
-            <h3 id="Snapshot"><a href="#Snapshot" class="headerlink" title="Snapshot"></a>Snapshot</h3><ul>
+            <h2 id="Snapshot"><a href="#Snapshot" class="headerlink" title="Snapshot"></a>Snapshot</h2><ul>
 <li><p>模型名称：ATLOP</p>
 </li>
 <li><p>论文来源：AAAI 2021 南加利福尼亚</p>
@@ -257,7 +264,7 @@
 <li><p>代码复现：<a target="_blank" rel="noopener" href="https://github.com/wzhouad/ATLOP">https://github.com/wzhouad/ATLOP</a></p>
 </li>
 </ul>
-<h3 id="Method"><a href="#Method" class="headerlink" title="Method"></a>Method</h3><h4 id="Enhanced-BERT-baseline"><a href="#Enhanced-BERT-baseline" class="headerlink" title="Enhanced BERT baseline"></a>Enhanced BERT baseline</h4><ul>
+<h2 id="Method"><a href="#Method" class="headerlink" title="Method"></a>Method</h2><h3 id="Enhanced-BERT-baseline"><a href="#Enhanced-BERT-baseline" class="headerlink" title="Enhanced BERT baseline"></a>Enhanced BERT baseline</h3><ul>
 <li><p>Mentions 标识：Inserting “*” symbol at the start and end of mentions.</p>
 </li>
 <li><p>Smooth version of max pooling：取代了之前的求平均</p>
@@ -269,7 +276,7 @@
 \left[z_{o}^{1} ; \ldots ; z_{o}^{k}\right]=z_{o}\\
 P\left(r \mid e_{s}, e_{o}\right)=\sigma\left(\sum_{i=1}^{k} z_{s}^{i_{\top}} W_{r}^{i} z_{o}^{i}+b_{r}\right)</script></li>
 </ul>
-<h4 id="Adaptive-Thresholding"><a href="#Adaptive-Thresholding" class="headerlink" title="Adaptive Thresholding"></a>Adaptive Thresholding</h4><p>问题，针对关系？还是针对每个实例的实体对？</p>
+<h3 id="Adaptive-Thresholding"><a href="#Adaptive-Thresholding" class="headerlink" title="Adaptive Thresholding"></a>Adaptive Thresholding</h3><p>问题，针对关系？还是针对每个实例的实体对？</p>
 <p>回想之前设置阈值的方法，<strong>人为枚举，验证挑选。</strong>一个global的阈值 $\theta$ 并不能适用于所有的实体对的关系分类（$\mathrm{P}\left(r \mid e_{s}, e_{o}\right)&gt;\theta$, return 关系 $r$ ,or return $NA$）</p>
 <blockquote>
 <p>One global threshold does not suffice.</p>
@@ -290,7 +297,7 @@ P\left(r \mid e_{s}, e_{o}\right)=\sigma\left(\sum_{i=1}^{k} z_{s}^{i_{\top}} W_
 <p>Pull the logits of negative labels to be lower than the TH class</p>
 <script type="math/tex; mode=display">
 \mathcal{L}_{2}=-\log \left(\frac{\exp \left(\operatorname{logit}_{\mathrm{TH}}\right)}{\sum_{r^{\prime} \in \mathcal{N}_{T} \cup\{\mathrm{TH}\}} \exp \left(\operatorname{logit}_{r^{\prime}}\right)}\right)</script><script type="math/tex; mode=display">
-\mathcal{L}=\mathcal{L}_{1}+\mathcal{L}_{2}</script><h4 id="Localized-Context-Pooling"><a href="#Localized-Context-Pooling" class="headerlink" title="Localized Context Pooling"></a>Localized Context Pooling</h4><div align="center">
+\mathcal{L}=\mathcal{L}_{1}+\mathcal{L}_{2}</script><h3 id="Localized-Context-Pooling"><a href="#Localized-Context-Pooling" class="headerlink" title="Localized Context Pooling"></a>Localized Context Pooling</h3><div align="center">
         <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/23/215036-254531.png">  
     </a>
 </div>
@@ -315,19 +322,19 @@ c^{(s, o)}=H^{T} a^{(s, o)}</script><p>Add the localized context to entity pair 
 <p>相当于丰富了原始实体的表示</p>
 <script type="math/tex; mode=display">
 z_{S}^{(s, o)}=\tanh \left(W_{s} h_{e_{s}}+W_{c_{1}} c^{(s, o)}\right)\\
-z_{o}^{(s, o)}=\tanh \left(W_{o} h_{e_{o}}+W_{c_{2}} c^{(s, o)}\right)</script><h3 id="Experiments"><a href="#Experiments" class="headerlink" title="Experiments"></a>Experiments</h3><h4 id="性能表现："><a href="#性能表现：" class="headerlink" title="性能表现："></a>性能表现：</h4><div align="center">
+z_{o}^{(s, o)}=\tanh \left(W_{o} h_{e_{o}}+W_{c_{2}} c^{(s, o)}\right)</script><h2 id="Experiments"><a href="#Experiments" class="headerlink" title="Experiments"></a>Experiments</h2><h3 id="性能表现："><a href="#性能表现：" class="headerlink" title="性能表现："></a>性能表现：</h3><div align="center">
         <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/23/230925-727895.png">  
     </a>
 </div>
 
-<h4 id="消融实验："><a href="#消融实验：" class="headerlink" title="消融实验："></a>消融实验：</h4><div align="center">
+<h3 id="消融实验："><a href="#消融实验：" class="headerlink" title="消融实验："></a>消融实验：</h3><div align="center">
         <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/23/232202-836232.png">  
     </a>
 </div>
 - Logsumexp Pooling, Group Bilinear对性能都有一个点的提升(原因待探究TODO5)
 - entity marker 对性能的影响很小
 
-#### 阈值选择策略
+### 阈值选择策略
 
 全局 vs 分类别阈值 vs 自适应阈值
 
@@ -337,13 +344,13 @@ z_{o}^{(s, o)}=\tanh \left(W_{o} h_{e_{o}}+W_{c_{2}} c^{(s, o)}\right)</script><
 </div>
 
 <p>分类别阈值设置在验证集上最优，测试集上最差，泛化能力不足？</p>
-<h4 id="上下文池化"><a href="#上下文池化" class="headerlink" title="上下文池化"></a>上下文池化</h4><p>Localized context pooling (LOP)在实体数量越来越多时，提升幅度也逐渐变大，在entity数量&lt;5个时候，pooling没有什么用，</p>
+<h3 id="上下文池化"><a href="#上下文池化" class="headerlink" title="上下文池化"></a>上下文池化</h3><p>Localized context pooling (LOP)在实体数量越来越多时，提升幅度也逐渐变大，在entity数量&lt;5个时候，pooling没有什么用，</p>
 <div align="center">
         <img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202103/23/232710-425897.png">  
     </a>
 </div>
 
-<h3 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h3><ol>
+<h2 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h2><ol>
 <li><p>以往都是怎么缓解在DocRED中多分类问题的呢？</p>
 </li>
 <li><p>了解下CorefBERT（Coreferential reasoning learning for language representation）</p>
@@ -377,7 +384,7 @@ z_{o}^{(s, o)}=\tanh \left(W_{o} h_{e_{o}}+W_{c_{2}} c^{(s, o)}\right)</script><
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="http://example.com/2021/07/24/1%20Document-Level%20Relation%20Extraction%20with%20Adaptive%20Thresholding%20and/">http://example.com/2021/07/24/1%20Document-Level%20Relation%20Extraction%20with%20Adaptive%20Thresholding%20and/</a></span>
+                        <span><a href="http://example.com/2021/03/03/AAAI2021%20Document-Level%20Relation%20Extraction%20with%20Adaptive%20Thresholding/">http://example.com/2021/03/03/AAAI2021%20Document-Level%20Relation%20Extraction%20with%20Adaptive%20Thresholding/</a></span>
                     </p>
                 
                 
@@ -400,6 +407,10 @@ z_{o}^{(s, o)}=\tanh \left(W_{o} h_{e_{o}}+W_{c_{2}} c^{(s, o)}\right)</script><
                 <span>Tag(s):</span>
                 <span class="tag">
                     
+                    
+                        <a href="/tags/document-level-RE/"># document-level RE</a>
+                    
+                        
                 </span>
             </div>
             <div>
@@ -410,10 +421,10 @@ z_{o}^{(s, o)}=\tanh \left(W_{o} h_{e_{o}}+W_{c_{2}} c^{(s, o)}\right)</script><
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2021/07/24/1%20Downstream%20Model%20Design%20of%20Pre-trained%20Language%20Model%20for%20Relation%20Extraction%20Task%20%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/"></a>
+                <a class="prev" rel="prev" href="/2021/03/04/ACL2018-A-Walk-based-Model-on-Entity-Graphs-for-Relation-Extraction/">ACL2018 | A Walk-based Model on Entity Graphs for Relation Extraction</a>
             
             
-            <a class="next" rel="next" href="/2021/07/24/1%20Document-level%20RE/"></a>
+            <a class="next" rel="next" href="/2021/01/23/ACL2020%20Reasoning%20with%20Latent%20Structure%20Refinement%20for%20Document-Level%20Relation%20Extraction%20%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/">ACL2020 | Reasoning with Latent Structure Refinement for Document-Level Relation Extraction</a>
             
         </section>
 
