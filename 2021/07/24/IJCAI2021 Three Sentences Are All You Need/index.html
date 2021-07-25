@@ -12,7 +12,7 @@
 
 
 
-<title>EMNLP2020 | Double Graph Based Reasoning for Document-level Relation Extraction | Chenhs</title>
+<title>IJCAI2021 | Three Sentence is all you need:Local Path Enhanced DocRE | Chenhs</title>
 
 
 
@@ -214,7 +214,7 @@
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">EMNLP2020 | Double Graph Based Reasoning for Document-level Relation Extraction</h1>
+            <h1 class="post-title">IJCAI2021 | Three Sentence is all you need:Local Path Enhanced DocRE</h1>
             
                 <div class="post-meta">
                     
@@ -223,7 +223,7 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">三月 13, 2021&nbsp;&nbsp;17:09:22</a>
+                        Date: <a href="#">七月 24, 2021&nbsp;&nbsp;17:09:22</a>
                         </span>
                     
                     
@@ -239,90 +239,54 @@
         </header>
 
         <div class="post-content">
-            <h2 id="Background"><a href="#Background" class="headerlink" title="Background"></a>Background</h2><p>代码链接 <a target="_blank" rel="noopener" href="https://github.com/DreamInvoker/GAIN，其性能相较">https://github.com/DreamInvoker/GAIN，其性能相较</a> ACL 2020中的文档级关系抽取模型LSR有一定的提升，其能够有提升的主要原因在于两点：</p>
+            <h2 id="Snapshot"><a href="#Snapshot" class="headerlink" title="Snapshot"></a>Snapshot</h2><ul>
+<li><p>模型名称：Three sentence is all you need</p>
+</li>
+<li><p>论文来源：ACL 2021 北大</p>
+</li>
+<li><p>面向任务：DocRE</p>
+</li>
+<li><p>方法分类：Others</p>
+</li>
+<li><p>论文动机：在给定实体对的情况下，往往仅仅需要依赖几句而非全文便可以推断出其关系。依照此动机，本文提出了一种令人尴尬且简单的方式（embarrassingly simple but effective）来探究到底需要<strong>how many sentence</strong>才足以推断其关系。</p>
+<blockquote>
+<p>以往的方法去引入图神经网络便是为了过滤全文的冗余信息。但此类方法不够直接且解释性不强（鬼知道过滤了什么呢）</p>
+</blockquote>
+</li>
+<li><p>指标分数：</p>
 <ul>
-<li>双图<ul>
-<li>mention-level Graph: model complex interaction among mentions across sentences with heterogeneous mention-level graph (hMG) 异构图相较之前一些构建同质图做特征传播的模型，使用异质图可以融合更复杂的特征；</li>
-<li>Entity-level Graph: merge mentions that infer to the same entity;</li>
-</ul>
-</li>
-<li>A novel path reasoning among entities.新颖的路径推理机制</li>
-</ul>
-<hr>
-<h2 id="Model"><a href="#Model" class="headerlink" title="Model"></a>Model</h2><p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/17/111356-296689.png" alt="image-20201117111356422"></p>
-<ul>
-<li><p><strong>Encoding Module</strong></p>
-<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/17/111910-193481.png" alt="image-20201117111907096"></p>
-<p>$E_{w}(\cdot), E_{t}(\cdot)$ and $E_{c}(\cdot)$  记作 word embedding layer，entity type embedding layer, coreference embedding layer ; $t_i$ 和 $c_i$ 是name entity type and entity id;</p>
-<p>以句子为单位，使用LSTM/BERT对文本进行编码，以LSTM为例，将每个单词的词向量、实体类型编码（如果单词不属于实体提及就设为None）、共指编码拼接作为输入：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/17/112923-692006.png" alt="image-20201117112921682"></p>
-</li>
-<li><p>Mention-level graph 异构图-<strong>提及图特征聚合</strong></p>
-<p>两种节点：提及节点、文档节点</p>
-<p>三种类型边:</p>
-<ul>
-<li>Intra-Entity Edge: 连接同一实体提及；</li>
-<li>Inter-Entity Edge：同一句话下的不同实体提及；</li>
-<li>Document Edge：所有的提及都连接到文档节点（话说可以解决长距离的依赖问题？因为所有的提及节点都可以通过文档节点和其余的提及节点相连接。以文档节点为轴心，两个提及节点之间的距离最长为2）==可以算做是小技巧/小创新？==</li>
-</ul>
-<p>Aggregate the features from neighbors:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/17/162509-651691.png" alt="image-20201117162507795"></p>
-<p>Concatenate hidden states of each layer:(==可借鉴，加个注意力？？==)</p>
-<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/17/162200-410006.png" alt="image-20201117162159021"></p>
-</li>
-<li><p>Entity-level graph <strong>实体图关系推理</strong></p>
-<p>在Entity-level graph（EG）中忽略掉了hMG中的文档节点，同一实体的不同提及被归为实体节点：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/17/220829-811720.png" alt="image-20201117220827208"></p>
-<p>将有关系的两个实体相连（若两个实体的提及之间有关系&lt;即有相连边&gt;则这两个实体就有关系），从而得到EG中的边。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/17/221634-462176.png" alt="image-20201117221632649"></p>
-<p>基于上述边的表示，以实体$e_o$作为中介节点，从头实体$e_h$到尾实体$e_t$之间的第$i$条路径表示为：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/17/222620-808784.png" alt="image-20201117222618578"></p>
-<p>由于两个实体间的路径可能有多条，所以需要有对多条路径的融合机制，GAIN采用注意机制，利用$(e_h,e_t)$作为query,融合$e_h$和$e_t$之间不同路径的信息。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/17/223223-275887.png" alt="image-20201117223221792"></p>
-<p>在实体图关系推理模块中，一个实体通过融合其提及的信息来表示，这些提及信息通常在多个句子中，因此这种提及向量的融合方式实现了一定程度上的跨句信息传播。</p>
-<p>==此外，潜在的推理逻辑由实体间的不同路径来建模。然后将它们与注意机制相结合，这样就可以根据潜在的逻辑推理链来预测关系。==（远距离建模实体关系，唉，应该是借鉴了2018的walk-based model）</p>
-</li>
-<li><p>Classification Module</p>
-<p>对于每个实体对$(e_h,e_t)$,连接三种表示作为关系向量的表示：</p>
-<ul>
-<li><p>实体图中导出的头尾实体表示$e_h$和$e_t$,使用比较运算（comparing operation）增强特征，即两个实体表示之间差的绝对值。</p>
-</li>
-<li><p>MG中的文档节点表示，有助于聚合跨句信息，提供文档感知表示；</p>
-</li>
-<li><p>在实体图（EG）中得到的综合推理路径向量 $p_{h,t}$</p>
-<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/17/231251-514598.png" alt="image-20201117231249384"></p>
-</li>
-</ul>
-<p>我们定义这个任务为一个多标签分类任务:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/17/231817-739371.png" alt="image-20201117231815826"></p>
-<p>$W_a,W_b,b_a,b_b$可训练参数；</p>
-<p>Classification loss:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/17/232127-437268.png" alt="image-20201117232126114"></p>
-</li>
-</ul>
-<hr>
-<h2 id="Experiment"><a href="#Experiment" class="headerlink" title="Experiment"></a>Experiment</h2><ul>
-<li><p>实验结果</p>
-<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/17/232557-682607.png" alt="image-20201117232555442"></p>
-</li>
-<li><p>消融实验</p>
-<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/17/233032-184816.png" alt="image-20201117233031331"></p>
-<p>也就是三个创新点:</p>
-<p>1.异质图 2.路径推理机制 3. document node</p>
-</li>
-<li><p>分析和讨论</p>
-<ul>
-<li><p>跨句关系性能表现</p>
-<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/17/233727-308827.png" alt="image-20201117233726001"></p>
-<p>hMG对于跨句间的关系事实有重要作用。</p>
-</li>
-<li><p>Infer-F1,which only consider relations that engaged in the relational reasoning process.</p>
-<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202011/17/233922-887215.png" alt="image-20201117233921194"></p>
-<p>==推理机制对于捕获潜在的推理链上实体关系事实有着重要作用。==—一种更加直观的推理方式。</p>
+<li><p>Dev F1:56.54; Test F1:56.23(BiLSTM Base)   </p>
+<blockquote>
+<p>Inter-F1: 49.11 跨句间的表现拉了后腿。</p>
+</blockquote>
 </li>
 </ul>
 </li>
+<li><p>快看速评：本文相较于去思索如何搭建网络，更像是对数据集进行分析。通过“人为”构造规则以模拟“认知”过程。得到的结论对以后的研究有启发意义，文章发现95%的样本仅仅需要不多于3句sentence作为supporting evidence便可以推断出其关系。87%的样本仅仅需要2句或更是。 指标分数虽不突出，但为以后研究，特别是evidence sentence的数量需求有了一个明确的界定。</p>
+<blockquote>
+<p>好的工作不在于指标高低，而在于角度。</p>
+</blockquote>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202107/24/220053-521518.png" alt="image-20210724215915750"></p>
+</li>
+<li><p>代码复现：<a target="_blank" rel="noopener" href="https://github.com/AndrewZhe/Three-Sentences-Are-All-You-Need">https://github.com/AndrewZhe/Three-Sentences-Are-All-You-Need</a></p>
+</li>
 </ul>
+<h2 id="Method"><a href="#Method" class="headerlink" title="Method"></a>Method</h2><h3 id="人为设计的path路径收集规则"><a href="#人为设计的path路径收集规则" class="headerlink" title="人为设计的path路径收集规则"></a>人为设计的path路径收集规则</h3><p>受数据标注员标注DocRED数据集的启发（倾向于选择能够将两实体互相联系起来的句子），所以本文人为设计了<strong>三种启发式规则</strong>收集关于两实体间可能的path集合(实则是sentence集合)</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202107/25/130347-311505.png" alt="image-20210724220041285"></p>
+<ol>
+<li><p>Consecutive Paths（连续）：头实体和尾实体限定出现在连续的3句内，也就是两实体距离≤2。此时$S_{i-1},S_{i},S_{i+1}$构成头实体与尾实体间的consecutive paths。由于关于目标实体的提及在文档中不止一次出现，所以大多情景下实体对之间的连续路径不止一条。</p>
+</li>
+<li><p>Multi-Hop Paths（多跳）：目标头实体与尾实体或许相距很远，但是可以通过其他实体连接（bridge）也就是<strong>Start from the head entity, go through all the brige entities, arrive at the tail entity</strong>。即$(e_h,e_{b1}),(e_{b1},e_{b2}),…(e_{bk},e_t)$，沿着上面的路径便可以择出$k+1$个sentences作为Multi-Hop Paths。根据表1的统计数据，绝大多数关系判断依赖的sentence数量≤3，故这里我们限制k的最大取值为2，同时对于两实体之间的bridge entity可能不止一个，所以也许同一实体对下会存在多条Multi-Hop Paths。</p>
+</li>
+<li><p>Default Paths：除以上两种路径之外，将所有出现目标头实体与尾实体的句子两两组合取来。也就是头实体sentence集合$\left\{S_{h_{1}}, \ldots, S_{h_{p}}\right\}$，尾实体sentence集合$\left\{S_{t_{1}}, \ldots, S_{t_{p}}\right\}$。将头实体与尾实体的sentence两两组合$\left\{S_{h_{1}}, S_{t_{1}}\right\}, \ldots,\left\{S_{h_{p}}, S_{t_{q}}\right\}$即为Default Paths。</p>
+</li>
+</ol>
+<h3 id="收集的如何？"><a href="#收集的如何？" class="headerlink" title="收集的如何？"></a>收集的如何？</h3><p>首先明确的是#Path是句子所连接形成的路径，#Sentence为路径上出现的句子。也就是说#Path：$\left\{S_{h_{1}}, S_{t_{1}}\right\}, \left\{S_{h_{p}}, S_{t_{q}}\right\}$(N = 2)；#Sentence（Size of path）: $S_{h_{1}}, S_{t_{1}},S_{h_{p}}, S_{t_{q}}$(N=4)。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202107/25/144606-906223.png" alt="image-20210725143143637"></p>
+<p>这里作者解释了一下C+M+D之所以只达到87.5%的覆盖率，是因为supporting evidence annotated in DocRED includes all associated sentences, while C+M+D only find a sufficient set to identify the relation.最终结果是在这三种类型的path下，文档平均句数为8的背景下，仅仅只需要2.69句便可（呼应标题：Three sentence is all you need）。</p>
+<h2 id="Experiment"><a href="#Experiment" class="headerlink" title="Experiment"></a>Experiment</h2><p><img src="https://cdn.jsdelivr.net/gh/chenhaishun/test_pic@master/typora202107/24/220136-599150.png" alt="image-20210724220135029"></p>
+<p>文章的出发点以及研究意义大于这里的指标表现。</p>
+<p>这里作者也cue了下graph-based method， 其收集信息主要依赖不那么明朗的self-adaptive manner,而非本文那么明确和可解释。对了，在可解释上，作者从语言本身的角度以及认知角度解释了本文研究得出的结论，算是为其可解释性上解释了一把。</p>
 
         </div>
 
@@ -337,7 +301,7 @@
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="http://example.com/2021/03/13/EMNLP2020%20Double%20Graph%20Based%20Reasoning%20for%20Document-level%20Relation%20Extraction/">http://example.com/2021/03/13/EMNLP2020%20Double%20Graph%20Based%20Reasoning%20for%20Document-level%20Relation%20Extraction/</a></span>
+                        <span><a href="http://example.com/2021/07/24/IJCAI2021%20Three%20Sentences%20Are%20All%20You%20Need/">http://example.com/2021/07/24/IJCAI2021%20Three%20Sentences%20Are%20All%20You%20Need/</a></span>
                     </p>
                 
                 
@@ -374,10 +338,8 @@
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2021/03/19/Arxiv2020%20Entity%20and%20Evidence%20Guided%20Relation%20Extraction%20for%20DocRED/">Arxiv2020 | Entity and Evidence Guided Relation Extraction for DocRED</a>
             
-            
-            <a class="next" rel="next" href="/2021/03/04/ACL2018-A-Walk-based-Model-on-Entity-Graphs-for-Relation-Extraction/">ACL2018 | A Walk-based Model on Entity Graphs for Relation Extraction</a>
+            <a class="next" rel="next" href="/2021/07/18/AAAI2021%20Entity%20Structure%20Within%20and%20Throughout%20Modeling%20Mention%20Dependencies%20for%20Document-Level%20Relation%20Extraction/">AAAI2021 | SSAN:Modeling Mention Dependencies for Document-Level Relation Extraction</a>
             
         </section>
 
